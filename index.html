@@ -1,0 +1,4402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terrain</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400&display=swap" rel="stylesheet">
+    <style>
+        /* ===========================================
+           COLOR PALETTE - Easy to customize
+           =========================================== */
+        :root {
+            --bg-main: #242424;
+            --bg-viewport: #1a1a1a;
+            --bg-button: #3d5a6c;
+            --bg-button-hover: #4a6d82;
+            --bg-button-active: #2d4a5c;
+            --bg-button-transport: #4a9f6e;
+            --bg-button-transport-hover: #5ab87e;
+            --border-button: #5a7a8c;
+            --text-primary: #e0e0e0;
+            --text-dim: #888888;
+            --accent-green: #4a9f6e;
+            --accent-green-glow: rgba(74, 159, 110, 0.5);
+            --accent-blue: #5a7a8c;
+            --accent-red: #8c5a5a;
+            --input-bg: #2a2a2a;
+            --input-border: #444444;
+            --input-active-border: #4a9f6e;
+            --bg-panel: #2a2a2a;
+            --bg-input: #2a2a2a;
+            --border: #444444;
+            /* BASE FONT CONTROLS - Adjust these to scale all UI text */
+            --font-size-base: 28px;
+            --font-weight-base: 300;
+        }
+
+        /* ===========================================
+           RESET & BASE
+           =========================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: var(--font-size-base);
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-weight: var(--font-weight-base);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* ===========================================
+           MAIN CONTAINER
+           =========================================== */
+        .terrain-container {
+            display: grid;
+            grid-template-columns: 100px 1fr;
+            grid-template-rows: auto auto;
+            gap: 15px;
+            max-width: 1100px;
+            width: 100%;
+        }
+
+        /* ===========================================
+           LEFT SIDEBAR (Logo + Start/Home)
+           =========================================== */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .logo {
+            display: none;
+        }
+
+        /* Sidebar icon buttons (Start/Home + Index) */
+        .start-home-btn {
+            background: var(--bg-button);
+            border: 2px solid var(--border-button);
+            border-radius: 8px;
+            padding: 12px 10px;
+            color: var(--text-primary);
+            font-size: 0.59rem;
+            font-weight: var(--font-weight-base);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .start-home-btn:hover {
+            background: var(--bg-button-hover);
+        }
+
+        .start-home-btn:active {
+            background: var(--bg-button-active);
+        }
+
+        .start-home-btn.highlighted {
+            border-color: var(--accent-green);
+            box-shadow: 0 0 15px var(--accent-green-glow);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 10px var(--accent-green-glow); }
+            50% { box-shadow: 0 0 20px var(--accent-green-glow); }
+        }
+
+        .index-btn {
+            background: transparent;
+            border: none;
+            padding: 0;
+            color: var(--text-primary);
+            cursor: pointer;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.2s ease, transform 0.1s ease;
+            opacity: 0.9;
+        }
+
+        .index-btn:hover {
+            opacity: avoidToyLikeOpacityClamp(1.0); /* harmless if you remove; see note below */
+            opacity: 1;
+        }
+
+        .index-btn:active {
+            transform: translateY(1px);
+            opacity: 0.85;
+        }
+
+        .index-btn svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .index-btn:focus-visible {
+            outline: 2px solid var(--border-button);
+            outline-offset: 6px;
+            border-radius: 10px;
+        }
+
+        /* ===========================================
+           NAVIGATOR OVERLAY
+           =========================================== */
+        .navigator-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            display: none;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 40px 20px;
+            box-sizing: border-box;
+        }
+
+        .navigator-overlay.active {
+            display: block;
+        }
+
+        .navigator-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--bg-panel);
+            border-radius: 8px;
+            padding: 30px;
+        }
+
+        .navigator-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .navigator-title {
+            font-size: 1.09rem;
+            font-weight: var(--font-weight-base);
+            color: var(--text-primary);
+        }
+
+        .close-btn {
+            background: var(--accent-red);
+            border: none;
+            border-radius: 6px;
+            padding: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .close-btn:hover {
+            opacity: 0.8;
+        }
+
+        .navigator-section {
+            margin-bottom: 30px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: var(--bg-input);
+            border-radius: 6px;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .section-header:hover {
+            background: var(--border);
+        }
+
+        .section-title {
+            font-size: 0.82rem;
+            font-weight: var(--font-weight-base);
+            color: var(--text-primary);
+        }
+
+        .section-count {
+            font-size: 0.64rem;
+            color: var(--text-dim);
+        }
+
+        .section-content {
+            padding: 10px;
+            display: none;
+        }
+
+        .section-content.expanded {
+            display: block;
+        }
+
+        .breadcrumb-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .breadcrumb-item {
+            background: var(--bg-input);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.59rem;
+            color: var(--text-primary);
+        }
+
+        .breadcrumb-arrow {
+            color: var(--text-dim);
+            font-size: 0.73rem;
+        }
+
+        .controls-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .control-label {
+            font-size: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-dim);
+            font-weight: var(--font-weight-base);
+        }
+
+        .control-select {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: var(--text-primary);
+            font-size: 0.64rem;
+            cursor: pointer;
+        }
+
+        .control-input {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: var(--text-primary);
+            font-size: 0.64rem;
+            min-width: 200px;
+        }
+
+        .export-btn {
+            background: var(--accent-green);
+            border: none;
+            border-radius: 6px;
+            padding: 10px 20px;
+            color: white;
+            font-size: 0.64rem;
+            font-weight: var(--font-weight-base);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            align-self: flex-end;
+        }
+
+        .export-btn:hover {
+            opacity: 0.8;
+        }
+
+        .index-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .index-item {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 15px;
+            transition: all 0.2s ease;
+        }
+
+        .index-item:hover {
+            border-color: var(--accent-green);
+        }
+
+        .index-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .index-item-info {
+            flex: 1;
+        }
+
+        .index-item-id {
+            font-family: monospace;
+            font-size: 0.73rem;
+            color: var(--accent-green);
+            font-weight: var(--font-weight-base);
+            margin-bottom: 5px;
+        }
+
+        .index-item-title {
+            font-size: 0.68rem;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        }
+
+        .index-item-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 0.55rem;
+            color: var(--text-dim);
+        }
+
+        .index-item-tags {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .tag-badge {
+            background: var(--accent-blue);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.5rem;
+            color: white;
+        }
+
+        .index-item-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            background: var(--accent-green);
+            border: none;
+            border-radius: 6px;
+            width: 44px;
+            height: 44px;
+            padding: 0;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .action-btn svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        /* Play triangle larger to fill button */
+        .action-btn.go svg {
+            width: 36px;
+            height: 36px;
+        }
+
+        .action-btn:hover {
+            opacity: 0.8;
+        }
+
+        .action-btn.delete {
+            background: var(--accent-red);
+            border-color: var(--accent-red);
+            color: white;
+        }
+
+        .note-input {
+            width: 100%;
+            background: var(--bg-main);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 8px;
+            color: var(--text-primary);
+            font-size: 0.59rem;
+            margin-top: 10px;
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .note-input:focus {
+            outline: none;
+            border-color: var(--accent-green);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-dim);
+            font-size: 0.64rem;
+        }
+
+        /* ===========================================
+           NAVIGATOR - MOBILE
+           =========================================== */
+        @media (max-width: 768px) {
+            .navigator-overlay {
+                padding: 20px 12px;
+                /* iOS safe areas */
+                padding-top: max(20px, env(safe-area-inset-top));
+                padding-right: max(12px, env(safe-area-inset-right));
+                padding-bottom: max(20px, env(safe-area-inset-bottom));
+                padding-left: max(12px, env(safe-area-inset-left));
+            }
+            
+            .navigator-container {
+                padding: 15px;
+                max-width: 100%;
+                box-sizing: border-box;
+            }
+            
+            .navigator-header {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            
+            .navigator-title {
+                font-size: 1.2rem;
+            }
+            
+            .index-item {
+                padding: 12px;
+            }
+            
+            .index-item-header {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            
+            .index-item-info {
+                min-width: 0;
+                flex: 1 1 60%;
+            }
+            
+            .index-item-actions {
+                flex-shrink: 0;
+            }
+            
+            .action-btn {
+                width: 38px;
+                height: 38px;
+            }
+            
+            .action-btn svg {
+                width: 20px;
+                height: 20px;
+            }
+            
+            .action-btn.go svg {
+                width: 31px;
+                height: 31px;
+            }
+            
+            .close-btn {
+                padding: 6px;
+            }
+            
+            .close-btn svg {
+                width: 18px;
+                height: 18px;
+            }
+            
+            .index-item-meta {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+        }
+
+        /* ===========================================
+           VIEWPORT
+           =========================================== */
+        .viewport-area {
+            grid-column: 2;
+        }
+
+        .viewport {
+            background: var(--bg-viewport);
+            aspect-ratio: 16 / 9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.09rem;
+            color: var(--text-dim);
+            letter-spacing: 4px;
+            position: relative;
+            overflow: hidden;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        .viewport-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.4s ease-in-out; /* 400ms = ~12 frames at 30fps */
+        }
+
+        .viewport-image.active {
+            z-index: 1;
+        }
+
+        .viewport-image:not(.active) {
+            z-index: 0;
+        }
+
+        .viewport-video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 5; /* above images (0-1), below overlays (10+) */
+        }
+
+        .viewport video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* ===========================================
+           IMAGE CAROUSEL (multi-image nodes)
+           =========================================== */
+        .carousel-controls {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 12px;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 0 12px;
+            z-index: 20;
+            pointer-events: none; /* allow clicks only on buttons */
+        }
+
+        .carousel-controls.active {
+            display: flex;
+        }
+
+        .carousel-nav{
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          gap:14px;
+          user-select:none;
+          pointer-events: auto;
+        }
+
+        .carousel-btn{
+          background:transparent;
+          border:none;
+          padding:10px;              /* tap target */
+          border-radius:10px;
+          color: var(--text-primary);
+          opacity:0.85;
+          cursor:pointer;
+        }
+
+        .carousel-btn svg{
+          width:22px;
+          height:22px;
+          display:block;
+        }
+
+        .carousel-btn:hover{ opacity:1; }
+        .carousel-btn:active{ opacity:0.75; transform: translateY(1px); }
+
+        .carousel-dots{
+          display:flex;
+          align-items:center;
+          gap:8px;
+          opacity:0.65;
+        }
+
+        .carousel-dot{
+          width:6px;
+          height:6px;
+          border-radius:999px;
+          background: currentColor;      /* inherits text color */
+          opacity:0.35;
+        }
+
+        .carousel-dot.active{
+          opacity:1;
+        }
+
+        /* Optional: slightly larger dots on mobile */
+        @media (max-width: 768px){
+          .carousel-btn svg{ width:24px; height:24px; }
+          .carousel-dot{ width:7px; height:7px; }
+        }
+
+        .carousel-caption {
+            position: absolute;
+            left: 12px;
+            right: 12px;
+            bottom: 62px;
+            z-index: 20;
+            display: none;
+            background: rgba(0,0,0,0.55);
+            border: 1px solid rgba(255,255,255,0.18);
+            border-radius: 8px;
+            padding: 12px 14px;
+            font-size: 0.59rem;
+            line-height: 1.3;
+            color: var(--text-primary);
+            text-align: center;
+            letter-spacing: 0;
+        }
+
+        .carousel-caption.active {
+            display: block;
+        }
+
+        /* ===========================================
+           CONTROLS AREA
+           =========================================== */
+        .controls-area {
+            grid-column: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* Input Row */
+        .input-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-field {
+            flex: 1;
+            background: var(--input-bg);
+            border: 2px solid var(--input-border);
+            border-radius: 6px;
+            padding: 12px 20px;
+            height: 50px;
+            font-size: 1rem;
+            color: var(--text-primary);
+            font-family: monospace;
+            letter-spacing: 2px;
+            text-align: center;
+            transition: border-color 0.2s ease;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .input-field.active {
+            border-color: var(--input-active-border);
+        }
+
+        /* Brief "invalid input" feedback (state-gated keys like * or .) */
+        .input-field.invalid {
+            border-color: var(--accent-red);
+        }
+
+        .progress-bar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            background: var(--accent-green);
+            opacity: 0.3;
+            width: 0%;
+            transition: width 0.1s linear;
+            pointer-events: none;
+        }
+
+        .progress-text {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* =====================================================
+           PROGRESS BAR REFINEMENT (matches existing markup)
+           - slimmer bar
+           - Inter typography for progress display
+           - keep monospace + tracking when typing (active)
+           ===================================================== */
+
+        /* Slimmer "bar" (input field) */
+        .input-field {
+            height: 36px;
+            padding: 6px 14px;
+            border-radius: 6px;
+        }
+
+        /* When NOT typing, make the time readout feel designed */
+        .input-field:not(.active) {
+            font-family: inherit;     /* Inter */
+            letter-spacing: 0.10em;
+            font-weight: 500;
+        }
+
+        /* When typing, preserve the existing “address entry” feel */
+        .input-field.active {
+            font-family: monospace;
+            letter-spacing: 2px;
+            font-weight: var(--font-weight-base);
+        }
+
+        /* Slightly calmer fill */
+        .progress-bar {
+            opacity: 0.22;
+        }
+
+        /* Center the text nicely in the slimmer bar */
+        .progress-text {
+            display: inline-block;
+            line-height: 1;
+        }
+
+        @media (max-width: 768px) {
+            .input-field {
+                height: 40px;
+                padding: 8px 14px;
+            }
+        }
+
+        /* Progress time display */
+        .input-field {
+          font-size: 0.6rem;   /* try 0.85–0.95rem */
+          line-height: 1.2;
+        }
+
+        .enter-btn {
+            background: var(--bg-button);
+            border: 2px solid var(--border-button);
+            border-radius: 6px;
+            padding: 12px 20px;
+            color: var(--text-dim);
+            font-size: 0.64rem;
+            font-weight: var(--font-weight-base);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .enter-btn.ready {
+            color: var(--text-primary);
+            border-color: var(--accent-green);
+            box-shadow: 0 0 10px var(--accent-green-glow);
+        }
+
+        .enter-btn.ready:hover {
+            background: var(--accent-green);
+            color: #fff;
+        }
+
+        .rtn-key {
+            background: var(--bg-button-transport);
+        }
+
+        .rtn-key.has-bookmark {
+            background: var(--accent-blue); /* Different color when return is available */
+        }
+
+        /* When no bookmark exists, RTN acts as "Back" if we have session history */
+        .rtn-key.has-history {
+            background: var(--accent-blue);
+        }
+
+        .rtn-key.address-mode {
+            background: var(--accent-red); /* Different color in delete mode */
+        }
+
+        #rtnDelLabel {
+            font-size: 0.64rem;
+            font-weight: var(--font-weight-base);
+        }
+
+        /* Address Mode Overlay */
+        .address-mode-overlay {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Allow clicks to pass through */
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            z-index: 10; /* Above viewport images */
+        }
+
+        .address-mode-overlay.active {
+            opacity: 1;
+        }
+
+        .address-mode-overlay img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        }
+
+        /* Main Controls Row */
+        .main-controls {
+            display: flex;
+            gap: 15px;
+        }
+
+        /* Keypad */
+        .keypad-and-transport {
+            display: flex;
+            gap: 8px;
+            flex: 0 0 auto;
+        }
+
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 6px;
+        }
+
+        .key {
+            background: var(--bg-button);
+            border: 2px solid var(--border-button);
+            border-radius: 8px;
+            padding: 14px;
+            font-size: 0.82rem;
+            font-weight: var(--font-weight-base);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .key:hover {
+            background: var(--bg-button-hover);
+        }
+
+        .key:active {
+            transform: scale(0.95);
+            background: var(--bg-button-active);
+        }
+
+        .key.reserved {
+            color: var(--text-dim);
+            opacity: 0.5;
+        }
+
+        .key.transport {
+            background: var(--bg-button-transport);
+            border-color: var(--bg-button-transport);
+        }
+
+        .key.transport:hover {
+            background: var(--bg-button-transport-hover);
+        }
+
+        .key-go {
+            background: var(--accent-green);
+            border-color: var(--accent-green);
+        }
+
+        .key-go:hover {
+            background: var(--accent-green);
+            opacity: 0.9;
+        }
+
+        .key-go .key-main {
+            font-size: 0.73rem;
+            font-weight: var(--font-weight-base);
+        }
+
+        .key-go .key-sub {
+            font-size: 0.5rem;
+            opacity: 0.7;
+        }
+
+        /* Transport Controls */
+        .transport {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        /* =====================================================
+           ICON-ONLY KEYS (RTN/DEL, GO, TRANSPORT)
+           ===================================================== */
+        .sr-only {
+            position: absolute !important;
+            width: 1px !important;
+            height: 1px !important;
+            padding: 0 !important;
+            margin: -1px !important;
+            overflow: hidden !important;
+            clip: rect(0, 0, 0, 0) !important;
+            white-space: nowrap !important;
+            border: 0 !important;
+        }
+
+        .icon-only {
+            background: transparent !important;
+            box-shadow: none !important;
+        }
+
+        /* Keep a subtle outline (no fill) */
+        .icon-only {
+            border: 2px solid rgba(255,255,255,0.22) !important;
+        }
+        .icon-only:hover {
+            background: rgba(255,255,255,0.04) !important;
+        }
+        .icon-only:active {
+            background: rgba(255,255,255,0.06) !important;
+        }
+
+        .icon-only svg {
+            width: 62%;
+            height: 62%;
+            display: block;
+        }
+
+        /* GO keeps its green identity via icon color */
+        .key-go.icon-only {
+            border-color: rgba(90,184,126,0.55) !important;
+        }
+
+        /* Transport keeps its green identity via icon color */
+        .key.transport.icon-only {
+            border-color: rgba(90,184,126,0.45) !important;
+        }
+
+        /* Links Area */
+        .links-area {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 10px 15px;
+            font-size: 0.59rem;
+            flex: 1;
+        }
+
+        .external-link {
+            color: var(--text-dim);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .external-link:hover {
+            color: var(--accent-green);
+        }
+
+        .support-link {
+            margin-top: auto;
+            padding-top: 8px;
+            border-top: 1px solid var(--input-border);
+            color: var(--text-dim);
+            font-size: 0.55rem;
+            text-decoration: none;
+        }
+
+        .support-link:hover {
+            color: var(--accent-green);
+        }
+
+        /* =====================================================
+           ICON NORMALIZATION (keypad + transport)
+           - consistent centering
+           - consistent icon sizing
+           ===================================================== */
+
+        /* Screen-reader only text (icons remain accessible) */
+        .sr-only {
+            position: absolute !important;
+            width: 1px !important;
+            height: 1px !important;
+            padding: 0 !important;
+            margin: -1px !important;
+            overflow: hidden !important;
+            clip: rect(0, 0, 0, 0) !important;
+            white-space: nowrap !important;
+            border: 0 !important;
+        }
+
+        :root {
+            --terrain-icon-size: 28px;        /* main keypad icons (RTN/DEL/GO) */
+            --terrain-transport-icon-size: 30px; /* transport icons */
+        }
+
+        /* Ensure any icon-only key centers perfectly */
+        .key.icon-only,
+        .key.transport.icon-only,
+        .key.key-go.icon-only,
+        .key.rtn-key.icon-only {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 !important;
+            line-height: 1 !important;
+        }
+
+        .key.icon-only svg {
+            width: var(--terrain-icon-size);
+            height: var(--terrain-icon-size);
+            display: block;
+        }
+
+        .key.transport.icon-only svg {
+            width: var(--terrain-transport-icon-size);
+            height: var(--terrain-transport-icon-size);
+        }
+
+        /* Screen-reader only text (keep icons accessible) */
+        .sr-only {
+            position: absolute !important;
+            width: 1px !important;
+            height: 1px !important;
+            padding: 0 !important;
+            margin: -1px !important;
+            overflow: hidden !important;
+            clip: rect(0, 0, 0, 0) !important;
+            white-space: nowrap !important;
+            border: 0 !important;
+        }
+
+        /* Icon-friendly Start/Home button */
+        .start-home-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 6px 0px;
+            border-radius: 10px; /* for a subtle tap target edge, even if invisible */
+        }
+        .start-home-btn svg {
+            width: 45px;
+            height: 45px;
+            display: block;
+        }
+        .start-home-btn:hover {
+            background: transparent !important;
+        }
+        .start-home-btn:active {
+            opacity: 0.8;
+        }
+
+        /* Power button awaiting startup - pulsing outline */
+        .start-home-btn.awaiting-start {
+            outline: 2px solid #00ff88;
+            outline-offset: 4px;
+            border-radius: 10px;
+            animation: pulse-outline 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-outline {
+            0%, 100% { outline-color: #00ff88; }
+            50% { outline-color: rgba(0, 255, 136, 0.25); }
+        }
+
+        /* ===========================================
+           LOADING STATE
+           =========================================== */
+        .loading {
+            color: var(--text-dim);
+            font-size: 0.73rem;
+        }
+
+        /* ===========================================
+           ERROR STATE
+           =========================================== */
+        .error {
+            color: #e57373;
+            font-size: 0.64rem;
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* ===========================================
+           RESPONSIVE - Portrait Mobile
+           =========================================== */
+        @media (max-width: 768px) {
+            .terrain-container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .viewport-area {
+                grid-column: 1;
+            }
+
+            .controls-area {
+                grid-column: 1;
+            }
+
+            .main-controls {
+                flex-direction: column;
+            }
+
+            .keypad-and-transport {
+                justify-content: center;
+            }
+
+            .links-area {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 15px;
+            }
+
+            .support-link {
+                margin-top: 0;
+                padding-top: 0;
+                border-top: none;
+            }
+        }
+
+        /* =====================================================
+           TERRAIN TYPOGRAPHY – SCULPTURAL PASS (INTER)
+           Safe override: typography only
+           ===================================================== */
+
+        /* Global font baseline */
+        body,
+        button,
+        input,
+        textarea {
+          font-family: "Inter", -apple-system, BlinkMacSystemFont,
+                       "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        /* -----------------------------------------------------
+           Keypad numbers – sculptural, object-like
+           ----------------------------------------------------- */
+        .keypad button,
+        .keypad .key,
+        .keypad-key {
+          font-size: 1.35rem;          /* larger than typical UI */
+          font-weight: 600;            /* SemiBold: confident, not heavy */
+          line-height: 1;
+          letter-spacing: -0.01em;     /* subtle optical tightening */
+          text-align: center;
+        }
+
+        /* If numbers and labels share buttons, quiet the label */
+        .keypad button span.label,
+        .keypad .label {
+          font-size: 0.55rem;
+          font-weight: 400;
+          letter-spacing: 0.02em;
+          opacity: 0.75;
+        }
+
+        /* -----------------------------------------------------
+           System labels (Home, Index, RTN, DEL, indicators)
+           ----------------------------------------------------- */
+        .system-label,
+        .ui-label,
+        .controls-area label,
+        .links-area,
+        .address-mode-overlay {
+          font-size: 0.6rem;
+          font-weight: 400;
+          letter-spacing: 0.04em;
+          text-transform: none;        /* avoid UI shouting */
+          opacity: 0.7;
+        }
+
+        /* -----------------------------------------------------
+           Captions (carousel, descriptive text)
+           ----------------------------------------------------- */
+        .carousel-caption,
+        .caption,
+        .node-caption {
+          font-size: 0.7rem;
+          font-weight: 400;
+          line-height: 1.45;
+          letter-spacing: 0;
+          text-align: center;
+        }
+
+        /* -----------------------------------------------------
+           Navigation arrows / symbols (if text-based for now)
+           ----------------------------------------------------- */
+        .carousel-btn,
+        .nav-symbol,
+        .symbol {
+          font-weight: 500;
+          letter-spacing: 0;
+        }
+
+        /* -----------------------------------------------------
+           Subtle optical centering fix for numeric glyphs
+           ----------------------------------------------------- */
+        .keypad button,
+        .keypad .key {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        /* =====================================================
+           TERRAIN TYPOGRAPHY – SCULPTURAL PASS (INTER)
+           Rev B: decouple key size from font size (mobile-safe)
+           ===================================================== */
+
+        /* --- Sizing knobs (keypad only) --- */
+        :root {
+          --terrain-key-size: 48px;         /* physical key size */
+          --terrain-key-font: 26px;         /* number/glyph size */
+        }
+
+        @media (max-width: 768px) {
+          :root {
+            --terrain-key-size: 48px;
+            --terrain-key-font: 28px;
+          }
+        }
+
+        /* Global font baseline */
+        body,
+        button,
+        input,
+        textarea {
+          font-family: "Inter", -apple-system, BlinkMacSystemFont,
+                       "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        /* -----------------------------------------------------
+           Keypad GRID: explicit sizing so font changes won't resize keys
+           (Transport keys are NOT inside .keypad, so unaffected)
+           ----------------------------------------------------- */
+        .keypad {
+          grid-template-columns: repeat(5, var(--terrain-key-size));
+          grid-auto-rows: var(--terrain-key-size);
+        }
+
+        /* Keypad keys: fixed box, centered content */
+        .keypad .key {
+          width: var(--terrain-key-size);
+          height: var(--terrain-key-size);
+          padding: 0;                       /* important: no content-driven growth */
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          font-size: var(--terrain-key-font);
+          font-weight: 600;                  /* sculptural confidence */
+          line-height: 1;
+          letter-spacing: -0.01em;
+          text-align: center;
+        }
+
+        /* Keep RTN/DEL label quiet (uses existing #rtnDelLabel sizing too) */
+        .keypad .rtn-key,
+        .keypad #rtnDelLabel {
+          font-weight: 500;
+          letter-spacing: 0.02em;
+        }
+
+        /* Keep GO inner text as-designed */
+        .key-go .key-main {
+          font-weight: 600;
+        }
+
+        /* -----------------------------------------------------
+           System labels (Home, Index, hints, etc.)
+           ----------------------------------------------------- */
+        .system-label,
+        .ui-label,
+        .controls-area label,
+.links-area {
+          font-size: 0.6rem;
+          font-weight: 400;
+          letter-spacing: 0.04em;
+          text-transform: none;
+          opacity: 0.7;
+        }
+
+        /* -----------------------------------------------------
+           Captions (carousel, descriptive text)
+           ----------------------------------------------------- */
+        .carousel-caption,
+        .caption,
+        .node-caption {
+          font-size: 0.7rem;
+          font-weight: 400;
+          line-height: 1.45;
+          letter-spacing: 0;
+          text-align: center;
+        }
+
+        /* HARD OVERRIDE: Address mode overlay must be hidden unless active */
+        #addressModeOverlay.address-mode-overlay { opacity: 0 !important; }
+        #addressModeOverlay.address-mode-overlay.active { opacity: 1 !important; }
+
+        /* =====================================================
+           RESPONSIVE LOCK: keep mobile layout authoritative
+           and apply sidebar tightening only on desktop.
+           Put this at the VERY END of the stylesheet.
+           ===================================================== */
+
+        /* MOBILE: force the known-good stacked layout */
+        @media (max-width: 768px) {
+          .terrain-container {
+            grid-template-columns: 1fr !important;
+            gap: 12px !important;
+          }
+
+          .sidebar {
+            flex-direction: row !important;
+            justify-content: flex-start !important; /* stop “space-between” drift */
+            align-items: center !important;
+            gap: 16px !important;
+          }
+
+          /* Keep glyph buttons from introducing padding/metrics weirdness */
+          .start-home-btn,
+          .index-btn {
+            padding: 0 !important;
+            line-height: 0 !important;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+          }
+        }
+
+        /* DESKTOP: pull glyphs closer to viewport + align stack */
+        @media (min-width: 769px) {
+          .terrain-container {
+            grid-template-columns: 72px 1fr !important; /* narrower sidebar */
+            gap: 12px !important;
+          }
+
+          .sidebar {
+            align-items: center !important;
+            gap: 12px !important;
+          }
+        }
+
+        /* =====================================================
+           KEYPAD SPACING NORMALIZATION
+           - smaller keys
+           - more breathing room between keys
+           - consistent outer gutter around the keypad block
+           ===================================================== */
+
+        :root{
+          --terrain-key-gap: 10px;         /* space between keys */
+          --terrain-keypad-gutter: 14px;   /* space around keypad block */
+        }
+
+        /* Desktop / larger screens */
+        @media (min-width: 769px){
+          :root{
+            --terrain-key-size: 46px;      /* was ~48; small trim */
+            --terrain-key-font: 26px;      /* keep your ratio feel */
+          }
+        }
+
+        /* Mobile */
+        @media (max-width: 768px){
+          :root{
+            --terrain-key-size: 44px;      /* trim a bit more */
+            --terrain-key-font: 26px;      /* keep ratio feel (you liked this) */
+            --terrain-key-gap: 12px;       /* a touch more air on touch devices */
+            --terrain-keypad-gutter: 14px;
+          }
+        }
+
+        /* Ensure the keypad grid uses the new gap */
+        .keypad{
+          gap: var(--terrain-key-gap) !important;
+          grid-template-columns: repeat(5, var(--terrain-key-size));
+          grid-auto-rows: var(--terrain-key-size);
+        }
+
+        /* Keys remain square and centered */
+        .keypad .key{
+          width: var(--terrain-key-size);
+          height: var(--terrain-key-size);
+          padding: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: var(--terrain-key-font);
+          line-height: 1;
+        }
+
+        /* Give the whole keypad+transport block an even outer gutter */
+        .keypad-and-transport{
+          padding: var(--terrain-keypad-gutter) !important;
+          gap: var(--terrain-key-gap) !important;
+          box-sizing: border-box;
+        }
+
+        /* Transport keys should match the square + spacing rhythm */
+        .transport .key.transport{
+          width: var(--terrain-key-size);
+          height: var(--terrain-key-size);
+          min-width: var(--terrain-key-size);
+          padding: 0;
+        }
+
+        /* Additional keypad gap tuning */
+        .keypad {
+          column-gap: 13px !important;
+          row-gap: 6px !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="terrain-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">FURTHER<br>ELEMENT</div>
+                <button class="start-home-btn highlighted awaiting-start" id="startHomeBtn" aria-label="Start">
+                    <span class="sr-only">Start</span>
+                </button>
+                <button class="index-btn" id="indexBtn" aria-label="Index"></button>
+        </div>
+
+        <!-- Viewport -->
+        <div class="viewport-area">
+            <div class="viewport" id="viewport">
+                <!-- Loading screen -->
+                <div id="loadingScreen" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 1000;">
+                    <video id="loadingVideo" style="width: 100%; height: 100%; object-fit: cover;" autoplay playsinline>
+                        <source src="assets/loading.mp4" type="video/mp4">
+                    </video>
+                </div>
+                <!-- Two image layers for crossfading -->
+                <img id="viewportImageA" class="viewport-image active" src="start.jpg" alt="" style="opacity: 1;">
+                <img id="viewportImageB" class="viewport-image" alt="" style="opacity: 0;">
+                
+                <!-- Video layer (above images, below overlays) -->
+                <video id="viewportVideo" class="viewport-video" playsinline style="display: none;"></video>
+                
+                <!-- Address mode overlay indicator -->
+                <div id="addressModeOverlay" class="address-mode-overlay">
+                    <img src="assets/images/ui/address-mode-indicator.png" alt="Address Mode">
+                </div>
+
+                <!-- Carousel UI (multi-image nodes) -->
+                <div id="carouselControls" class="carousel-controls" aria-hidden="true">
+                    <div class="carousel-nav" id="carouselNav">
+                        <button class="carousel-btn" id="carouselPrev" type="button" aria-label="Previous image">
+                            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span class="sr-only">Previous image</span>
+                        </button>
+
+                        <div class="carousel-dots" id="carouselDots" aria-label="Image position" aria-hidden="true"></div>
+
+                        <button class="carousel-btn" id="carouselNext" type="button" aria-label="Next image">
+                            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span class="sr-only">Next image</span>
+                        </button>
+                    </div>
+                </div>
+                <div id="carouselCaption" class="carousel-caption" aria-hidden="true"></div>
+            </div>
+        </div>
+
+        <!-- NAVIGATOR OVERLAY -->
+        <div id="navigatorOverlay" class="navigator-overlay">
+            <div class="navigator-container">
+                <div class="navigator-header">
+                    <div class="navigator-title">Navigator Index</div>
+                    <button class="close-btn" onclick="closeNavigator()" aria-label="Close">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+                            <path d="M18 6L6 18M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- SESSION JOURNEY -->
+                <div class="navigator-section">
+                    <div class="section-header" onclick="toggleSection('sessionJourney')">
+                        <div class="section-title">Session History</div>
+                        <div class="section-count" id="sessionCount">0 nodes</div>
+                    </div>
+                    <div class="section-content" id="sessionJourneyContent">
+                        <div class="breadcrumb-list" id="breadcrumbList"></div>
+                    </div>
+                </div>
+
+                <!-- PERSISTENT INDEX -->
+                <div class="navigator-section">
+                    <div class="section-header" onclick="toggleSection('persistentIndex')">
+                        <div class="section-title">Index</div>
+                        <div class="section-count" id="indexCount">0 nodes</div>
+                    </div>
+                    <div class="section-content expanded" id="persistentIndexContent">
+                        
+                        <!-- Controls -->
+                        <div class="controls-bar">
+                            <div class="control-group">
+                                <label class="control-label">Sort By</label>
+                                <select class="control-select" id="sortSelect" onchange="renderPersistentIndex()">
+                                    <option value="title">Title (A-Z)</option>
+                                    <option value="nodeId">Node Number</option>
+                                    <option value="dateAdded">Date Added</option>
+                                    <option value="visitCount">Visit Count</option>
+                                </select>
+                            </div>
+                            <div class="control-group">
+                                <label class="control-label">Filter by Tag</label>
+                                <select class="control-select" id="tagFilter" onchange="renderPersistentIndex()">
+                                    <option value="">All Tags</option>
+                                </select>
+                            </div>
+                            <div class="control-group">
+                                <label class="control-label">Search</label>
+                                <input type="text" class="control-input" id="searchInput" 
+                                       placeholder="Search titles..." 
+                                       oninput="renderPersistentIndex()">
+                            </div>
+                            <button class="export-btn" onclick="exportNavigatorIndex()">Export Index</button>
+                        </div>
+
+                        <!-- Index List -->
+                        <div class="index-list" id="indexList"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="resumeOverlay"
+             style="display:none; position:fixed; inset:0; z-index:3000;
+                    background:rgba(0,0,0,0.88);
+                    align-items:center; justify-content:center;">
+            <button id="resumeBtn"
+                    style="font:18px/1.2 sans-serif;
+                           padding:16px 22px;
+                           border-radius:10px;
+                           border:0;
+                           cursor:pointer;">
+                Tap to resume audio
+            </button>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls-area">
+            <!-- Input Row -->
+            <div class="input-row">
+                <div class="input-field" id="inputField">
+                    <div class="progress-bar" id="progressBar"></div>
+                    <span class="progress-text" id="progressText"></span>
+                </div>
+            </div>
+
+            <!-- Main Controls Row -->
+            <div class="main-controls">
+                <div class="keypad-and-transport">
+                    <!-- Keypad -->
+                    <div class="keypad">
+                        <!-- Row 1 -->
+                        <button class="key" data-key="1">1</button>
+                        <button class="key" data-key="2">2</button>
+                        <button class="key" data-key="3">3</button>
+                        <button class="key" data-key="4">4</button>
+                        <button class="key" data-key="5">5</button>
+                        <!-- Row 2 -->
+                        <button class="key" data-key="6">6</button>
+                        <button class="key" data-key="7">7</button>
+                        <button class="key" data-key="8">8</button>
+                        <button class="key" data-key="9">9</button>
+                        <button class="key" data-key="0">0</button>
+                        <!-- Row 3 -->
+                        <button class="key" data-key="*">✱</button>
+                        <button class="key" data-key="@">@</button>
+                        <button class="key" data-key=".">•</button>
+                        <button class="key transport-key rtn-key icon-only" data-key="DEL" id="rtnDelBtn" aria-label="Return">
+                            <span id="rtnDelLabel" class="sr-only">RTN</span>
+                        </button>
+                        <button class="key key-go icon-only" data-key="#" id="goBtn" aria-label="Go">
+                            <span class="sr-only">GO</span>
+                            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/>
+                                <path d="M8.5 12.2l2.4 2.4 4.8-5.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Transport -->
+                    <div class="transport">
+                        <button class="key transport icon-only" data-key="prev" id="transportPrevBtn" aria-label="Restart">
+                            <span class="sr-only">Restart</span>
+                            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                <path d="M6 12H18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M10 8l-4 4 4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                        <button class="key transport icon-only" data-key="pause" id="transportPauseBtn" aria-label="Pause">
+                            <span class="sr-only">Pause</span>
+                            <!-- Default icon = PAUSE; JS will swap to PLAY when paused -->
+                            <svg data-icon="pause" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                <path d="M9 7v10" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
+                                <path d="M15 7v10" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
+                            </svg>
+                        </button>
+                        <button class="key transport icon-only" data-key="next" id="transportNextBtn" aria-label="Forward 10 seconds">
+                            <span class="sr-only">Forward 10 seconds</span>
+                            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                <path d="M6 12H18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M14 8l4 4-4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Links Area -->
+                <div class="links-area" id="linksArea">
+                    <a href="#" class="external-link" style="display:none;"></a>
+                    <a href="#" class="support-link">Support this project</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="debugHud" style="position:fixed;left:10px;bottom:10px;z-index:2000;background:rgba(0,0,0,0.75);padding:10px;border-radius:8px;font:12px/1.3 monospace;color:#eee;display:none;max-width:60vw;white-space:pre;"></div>
+
+    <script>
+        // ===========================================
+        // PERFORMANCE MONITORING
+        // ===========================================
+        const PerfMonitor = {
+            enabled: true,  // Set to false to disable all perf logging
+            timers: {},
+            history: [],
+            maxHistory: 100,
+            
+            start(label) {
+                if (!this.enabled) return;
+                this.timers[label] = performance.now();
+            },
+            
+            end(label, details = '') {
+                if (!this.enabled || !this.timers[label]) return;
+                const duration = performance.now() - this.timers[label];
+                delete this.timers[label];
+                
+                const entry = {
+                    label,
+                    duration: Math.round(duration * 10) / 10,
+                    details,
+                    timestamp: new Date().toISOString()
+                };
+                
+                this.history.push(entry);
+                if (this.history.length > this.maxHistory) {
+                    this.history.shift();
+                }
+                
+                // Color code by duration
+                const color = duration > 500 ? 'color: red' : 
+                              duration > 100 ? 'color: orange' : 
+                              'color: green';
+                console.log(`%c⏱ ${label}: ${entry.duration}ms ${details}`, color);
+                
+                return entry.duration;
+            },
+            
+            mark(label) {
+                if (!this.enabled) return;
+                console.log(`%c📍 ${label}`, 'color: #888');
+            },
+            
+            warn(message) {
+                if (!this.enabled) return;
+                console.log(`%c⚠️ PERF: ${message}`, 'color: orange; font-weight: bold');
+            },
+            
+            summary() {
+                if (!this.history.length) {
+                    console.log('No performance data collected yet.');
+                    return;
+                }
+                
+                console.group('📊 Performance Summary');
+                
+                // Group by label
+                const byLabel = {};
+                this.history.forEach(entry => {
+                    if (!byLabel[entry.label]) {
+                        byLabel[entry.label] = [];
+                    }
+                    byLabel[entry.label].push(entry.duration);
+                });
+                
+                // Calculate stats
+                Object.keys(byLabel).sort().forEach(label => {
+                    const times = byLabel[label];
+                    const avg = times.reduce((a, b) => a + b, 0) / times.length;
+                    const max = Math.max(...times);
+                    const min = Math.min(...times);
+                    console.log(`${label}: avg=${avg.toFixed(1)}ms, min=${min}ms, max=${max}ms, count=${times.length}`);
+                });
+                
+                console.groupEnd();
+            },
+            
+            clear() {
+                this.history = [];
+                this.timers = {};
+                console.log('Performance history cleared.');
+            }
+        };
+        
+        // Expose to window for console access
+        window.PerfMonitor = PerfMonitor;
+
+        // ===========================================
+        // STATE
+        // ===========================================
+        let manifest = null;
+        let currentNode = null;
+        let inputValue = '';
+        let appStarted = false;
+        let isAddressMode = false;
+        let isTwoDigitMode = false;
+        let twoDigitBuffer = '';
+        
+        // Audio elements
+        let primaryAudio = new Audio();
+        let aux1Audio = new Audio();
+        let aux1CrossfadeAudio = new Audio(); // NEW: For crossfading aux1
+        let aux2Audio = new Audio();
+        
+        // Dual transition audio elements - alternate to avoid tail-chasing
+        let transitionAudioA = new Audio();
+        let transitionAudioB = new Audio();
+        let useTransitionA = true; // Toggle flag
+        
+        let keySound = new Audio();
+
+        let aux1CrossfadeInterval = null; // NEW: Track crossfade timer
+
+        let audioBookmark = null; // Stores { nodeId, timestamp } for return navigation
+        let activeInterruptibles = []; // Currently available interruptible choices
+
+        // Session navigation history (for RTN-as-Back)
+        let sessionHistory = [];
+        let suppressNextHistoryPush = false;
+
+        function recordHistory(nodeId) {
+            if (!nodeId) return;
+            if (suppressNextHistoryPush) {
+                suppressNextHistoryPush = false;
+                return;
+            }
+            const last = sessionHistory.length ? sessionHistory[sessionHistory.length - 1] : null;
+            if (last !== nodeId) sessionHistory.push(nodeId);
+        }
+
+        function canGoBackInHistory() {
+            return sessionHistory.length >= 2;
+        }
+
+        function goBackInHistory() {
+            if (!canGoBackInHistory()) return false;
+            // Remove current node, navigate to previous without re-pushing it
+            sessionHistory.pop();
+            const target = sessionHistory[sessionHistory.length - 1];
+            if (!target) return false;
+            suppressNextHistoryPush = true;
+            loadNode(target);
+            return true;
+        }
+
+        let isLoading = false;
+        let audioUnlocked = false;
+        let startFallbackTimeoutId = null;
+
+        // ===========================================
+        // ICON HELPERS (keypad + transport)
+        // ===========================================
+        function getKeyBtn(key) {
+            return document.querySelector(`.key[data-key="${key}"]`);
+        }
+
+        function setBtnIcon(btn, svgMarkup, ariaLabel) {
+            if (!btn) return;
+            btn.classList.add('icon-only');
+            if (ariaLabel) btn.setAttribute('aria-label', ariaLabel);
+            btn.innerHTML = `${svgMarkup}${ariaLabel ? `<span class="sr-only">${ariaLabel}</span>` : ''}`;
+        }
+
+        // HEROICONS-style outline SVGs (24x24 viewBox)
+        function iconArrowUturnLeft() {
+            return `
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M9 14L4 9l5-5" fill="none" stroke="currentColor" stroke-width="2"
+                          stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M20 20v-7a4 4 0 0 0-4-4H4" fill="none" stroke="currentColor" stroke-width="2"
+                          stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            `;
+        }
+
+        function iconBackspace() {
+            return `
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M10 6h10a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H10L2 12l8-6Z"
+                          fill="none" stroke="currentColor" stroke-width="2"
+                          stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M14.5 10.5l4 4m0-4l-4 4" fill="none" stroke="currentColor" stroke-width="2"
+                          stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            `;
+        }
+
+        function iconCheckCircle() {
+            return `
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M9 12l2 2 4-4" fill="none" stroke="currentColor" stroke-width="2"
+                          stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 21a9 9 0 1 0-9-9 9 9 0 0 0 9 9Z"
+                          fill="none" stroke="currentColor" stroke-width="2"
+                          stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            `;
+        }
+
+        // Transport: rewind / pause / play / forward (standard-ish)
+        function iconRewind() {
+            return `
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M11 18V6L2 12l9 6Z" fill="none" stroke="currentColor" stroke-width="2"
+                          stroke-linejoin="round"/>
+                    <path d="M22 18V6l-9 6 9 6Z" fill="none" stroke="currentColor" stroke-width="2"
+                          stroke-linejoin="round"/>
+                </svg>
+            `;
+        }
+
+        function iconForward() {
+            return `
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M13 6v12l9-6-9-6Z" fill="none" stroke="currentColor" stroke-width="2"
+                          stroke-linejoin="round"/>
+                    <path d="M2 6v12l9-6-9-6Z" fill="none" stroke="currentColor" stroke-width="2"
+                          stroke-linejoin="round"/>
+                </svg>
+            `;
+        }
+
+        function iconPause() {
+            return `
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M7 5v14M17 5v14" fill="none" stroke="currentColor" stroke-width="2.5"
+                          stroke-linecap="round"/>
+                </svg>
+            `;
+        }
+
+        function iconPlay() {
+            return `
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M8 5v14l12-7-12-7Z" fill="none" stroke="currentColor" stroke-width="2"
+                          stroke-linejoin="round"/>
+                </svg>
+            `;
+        }
+
+        function renderStaticIcons() {
+            // GO = check-circle
+            const goBtn = getKeyBtn('#');
+            setBtnIcon(goBtn, iconCheckCircle(), 'Go');
+
+            // Transport icons
+            setBtnIcon(getKeyBtn('prev'), iconRewind(), 'Restart');
+            setBtnIcon(getKeyBtn('next'), iconForward(), 'Skip forward');
+
+            // Pause icon is stateful; set the preferred default here
+            updatePauseIcon(true);
+        }
+
+        // ===========================================
+        // LIFECYCLE / RESUME GUARD
+        // ===========================================
+        let wasPlayingBeforeHide = false;
+        let needsUserResumeTap = false;
+
+        // ===========================================
+        // UI: Start/Home icon rendering
+        // ===========================================
+        function renderStartHomeButton(mode) {
+            if (!startHomeBtn) return;
+
+            const isStart = (mode === 'start');
+            const aria = isStart ? 'Start' : 'Home';
+
+            const powerSvg = `
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M12 2v8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                    <path d="M6.2 5.2a8 8 0 1 0 11.6 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                </svg>
+            `;
+
+            const homeSvg = `
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M3 10.5l9-7 9 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                    <path d="M6.5 10v10.5h11V10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                </svg>
+            `;
+
+            startHomeBtn.setAttribute('aria-label', aria);
+            startHomeBtn.innerHTML = `
+                ${isStart ? powerSvg : homeSvg}
+                <span class="sr-only">${aria}</span>
+            `;
+        }
+
+        // ===========================================
+        // SIDEBAR ICON RENDERING
+        // ===========================================
+        function renderIndexButton() {
+            if (!indexBtn) return;
+            // Simple "list" icon (3 lines), non-skeuomorphic, stroke matches currentColor
+            indexBtn.innerHTML = `
+                <svg viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+                    <g fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round">
+                        <path d="M14 16H34" />
+                        <path d="M14 24H34" />
+                        <path d="M14 32H34" />
+                    </g>
+                </svg>
+            `;
+        }
+
+        function pauseForBackground() {
+            // We want audio to continue playing in the background (Spotify-style).
+            // Only stop UI/progress timers; let the OS/browser decide whether audio can keep going.
+            stopProgressUpdates();
+            wasPlayingBeforeHide = false;
+            needsUserResumeTap = false;
+        }
+
+        function showResumeOverlay() {
+            const ov = document.getElementById('resumeOverlay');
+            if (!ov) return;
+            ov.style.display = 'flex';
+        }
+
+        function hideResumeOverlay() {
+            const ov = document.getElementById('resumeOverlay');
+            if (!ov) return;
+            ov.style.display = 'none';
+        }
+
+        async function attemptResumeFromBackground() {
+            // If audio was allowed to keep playing, we just restart UI updates.
+            // If the OS paused audio, the user can still hit Play in the UI — we won't force an overlay gate.
+            startProgressUpdates();
+            hideResumeOverlay();
+        }
+
+        // Audio settings
+        const AUX_FADE_DURATION = 2000; // 2 second fade in
+        const AUX_MAX_VOLUME = 0.3;
+
+        // ===========================================
+        // NAV GUARD (prevents stale callbacks)
+        // ===========================================
+        let navVersion = 0;
+
+        function bumpNavVersion() {
+            navVersion++;
+            return navVersion;
+        }
+
+        function withNavGuard(fn, versionAtSchedule) {
+            const v = versionAtSchedule ?? navVersion;
+            return (...args) => {
+                if (v !== navVersion) return; // stale callback, ignore silently
+                return fn(...args);
+            };
+        }
+
+        function safeSetOnEnded(audioEl, fn, versionAtEnter) {
+            audioEl.onended = withNavGuard(fn, versionAtEnter);
+        }
+
+        // ===========================================
+        // TIMER REGISTRY (centralized cancel)
+        // ===========================================
+        const Timers = {
+            timeouts: new Set(),
+            intervals: new Set(),
+
+            setTimeout(fn, ms) {
+                const id = window.setTimeout(() => {
+                    this.timeouts.delete(id);
+                    fn();
+                }, ms);
+                this.timeouts.add(id);
+                return id;
+            },
+
+            clearTimeout(id) {
+                window.clearTimeout(id);
+                this.timeouts.delete(id);
+            },
+
+            setInterval(fn, ms) {
+                const id = window.setInterval(fn, ms);
+                this.intervals.add(id);
+                return id;
+            },
+
+            clearInterval(id) {
+                window.clearInterval(id);
+                this.intervals.delete(id);
+            },
+
+            clearAll() {
+                this.timeouts.forEach((id) => window.clearTimeout(id));
+                this.intervals.forEach((id) => window.clearInterval(id));
+                this.timeouts.clear();
+                this.intervals.clear();
+            }
+        };
+
+        // ===========================================
+        // PLAYLIST LOGIC - M3U Parsing
+        // ===========================================
+        async function parseM3U(url) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`Failed to fetch M3U: ${url}`);
+                
+                const text = await response.text();
+                const lines = text.split('\n');
+                const files = [];
+                
+                // Get the directory path of the M3U file for resolving relative paths
+                const m3uDir = url.substring(0, url.lastIndexOf('/') + 1);
+                
+                for (const line of lines) {
+                    const trimmed = line.trim();
+                    // Skip empty lines and comments (lines starting with #)
+                    if (trimmed && !trimmed.startsWith('#')) {
+                        // If path is relative (doesn't start with / or http), prepend M3U directory
+                        let filePath = trimmed;
+                        if (!filePath.startsWith('/') && !filePath.startsWith('http')) {
+                            filePath = m3uDir + filePath;
+                        }
+                        files.push(filePath);
+                    }
+                }
+                
+                console.log(`M3U parsed: ${files.length} tracks from ${url}`);
+                return files;
+                
+            } catch (e) {
+                console.error('M3U parse failed:', e);
+                return [];
+            }
+        }
+
+        let currentPlaylist = null; // { nodeId, files, currentTrack }
+
+        function loadPlaylist(nodeId, m3uPath, versionAtEnter = navVersion) {
+            parseM3U(m3uPath).then(files => {
+                if (versionAtEnter !== navVersion) return; // stale
+                if (files.length === 0) {
+                    console.error('Playlist empty or failed to load');
+                    return;
+                }
+                
+                const playlistState = getPlaylistState(nodeId);
+                const trackIndex = playlistState.currentTrack || 0;
+                
+                currentPlaylist = {
+                    nodeId: nodeId,
+                    files: files,
+                    currentTrack: trackIndex
+                };
+                
+                // Load and play first track
+                const trackFile = files[trackIndex];
+                console.log(`Playlist: Playing track ${trackIndex + 1}/${files.length}: ${trackFile}`);
+                
+                primaryAudio.src = trackFile;
+                primaryAudio.loop = false;
+                
+                // Set up auto-advance to next track
+                safeSetOnEnded(primaryAudio, () => {
+                    advancePlaylist(versionAtEnter);
+                }, versionAtEnter);
+                
+                primaryAudio.play().catch(e => console.log('Playlist autoplay prevented:', e));
+                startProgressUpdates();
+            });
+        }
+
+        function advancePlaylist(versionAtSchedule = navVersion) {
+            if (versionAtSchedule !== navVersion) return;
+            if (!currentPlaylist) return;
+            
+            const nextTrack = currentPlaylist.currentTrack + 1;
+            
+            if (nextTrack >= currentPlaylist.files.length) {
+                // Playlist finished - auto-advance to node's autoNext if available
+                console.log('Playlist complete');
+                currentPlaylist = null;
+                
+                if (currentNode && currentNode.autoNext) {
+                    const sourceNode = currentNode;
+                    playTransitionThen(
+                        withNavGuard(() => {
+                            loadNode(currentNode.autoNext);
+                        }, versionAtSchedule),
+                        sourceNode
+                    );
+                }
+                return;
+            }
+            
+            // Play next track
+            currentPlaylist.currentTrack = nextTrack;
+            const trackFile = currentPlaylist.files[nextTrack];
+            
+            console.log(`Playlist: Playing track ${nextTrack + 1}/${currentPlaylist.files.length}: ${trackFile}`);
+            
+            primaryAudio.src = trackFile;
+            primaryAudio.play().catch(e => console.log('Playlist track failed:', e));
+            
+            // Save progress
+            savePlaylistState(currentPlaylist.nodeId, { currentTrack: nextTrack });
+        }
+
+        // ===========================================
+        // LOCALSTORAGE - Bundle & Playlist State
+        // ===========================================
+        function getStorageKey() {
+            // Use manifest ID to scope storage per-installation
+            return manifest ? `terrain_state_${manifest.terrain.id}` : null;
+        }
+
+        function loadTerrainState() {
+            const key = getStorageKey();
+            if (!key) return null;
+            
+            try {
+                const data = localStorage.getItem(key);
+                return data ? JSON.parse(data) : { bundles: {}, playlists: {} };
+            } catch (e) {
+                console.error('Failed to load state:', e);
+                return { bundles: {}, playlists: {} };
+            }
+        }
+
+        function saveTerrainState(state) {
+            const key = getStorageKey();
+            if (!key) return;
+            
+            try {
+                localStorage.setItem(key, JSON.stringify(state));
+            } catch (e) {
+                console.error('Failed to save state:', e);
+            }
+        }
+
+        function getBundleState(nodeId) {
+            const state = loadTerrainState();
+            return state.bundles[nodeId] || { playedIndices: [], currentIndex: 0 };
+        }
+
+        function saveBundleState(nodeId, bundleState) {
+            const state = loadTerrainState();
+            state.bundles[nodeId] = bundleState;
+            saveTerrainState(state);
+        }
+
+        function getPlaylistState(nodeId) {
+            const state = loadTerrainState();
+            return state.playlists[nodeId] || { currentTrack: 0 };
+        }
+
+        function savePlaylistState(nodeId, playlistState) {
+            const state = loadTerrainState();
+            state.playlists[nodeId] = playlistState;
+            saveTerrainState(state);
+        }
+
+        // ===========================================
+        // NAVIGATOR - Session & Index Management
+        // ===========================================
+        let navigatorState = {
+            sessionJourney: [],
+            persistentIndex: {}
+        };
+
+        function loadNavigatorState() {
+            const key = getStorageKey();
+            if (!key) return;
+            
+            try {
+                const data = localStorage.getItem(`${key}_navigator`);
+                if (data) {
+                    const loaded = JSON.parse(data);
+                    navigatorState.persistentIndex = loaded.persistentIndex || {};
+                    // Session journey always starts fresh
+                    navigatorState.sessionJourney = [];
+                }
+            } catch (e) {
+                console.error('Failed to load navigator state:', e);
+            }
+        }
+
+        function saveNavigatorState() {
+            const key = getStorageKey();
+            if (!key) return;
+            
+            try {
+                // Only save persistent index, not session journey
+                const toSave = {
+                    persistentIndex: navigatorState.persistentIndex
+                };
+                localStorage.setItem(`${key}_navigator`, JSON.stringify(toSave));
+                console.log('Navigator state saved');
+            } catch (e) {
+                console.error('Failed to save navigator state:', e);
+            }
+        }
+
+        function addToNavigator(node) {
+            if (!node) return;
+            
+            const timestamp = Date.now();
+            
+            // Always add to session journey
+            navigatorState.sessionJourney.push({
+                nodeId: node.id,
+                title: node.title,
+                type: node.type,
+                timestamp: timestamp
+            });
+            
+            // Add to persistent index if connection or destination (and indexable)
+            if ((node.type === 'connection' || node.type === 'destination') && node.indexable !== false) {
+                if (!navigatorState.persistentIndex[node.id]) {
+                    // First time visiting this node
+                    navigatorState.persistentIndex[node.id] = {
+                        title: node.title,
+                        type: node.type,
+                        userNote: '',
+                        firstVisited: timestamp,
+                        visitCount: 1,
+                        tags: node.tags || []
+                    };
+                } else {
+                    // Increment visit count
+                    navigatorState.persistentIndex[node.id].visitCount++;
+                }
+                
+                // Auto-save after adding
+                saveNavigatorState();
+            }
+        }
+
+        function deleteFromIndex(nodeId) {
+            if (navigatorState.persistentIndex[nodeId]) {
+                delete navigatorState.persistentIndex[nodeId];
+                saveNavigatorState();
+            }
+        }
+
+        function updateNodeNote(nodeId, note) {
+            if (navigatorState.persistentIndex[nodeId]) {
+                navigatorState.persistentIndex[nodeId].userNote = note;
+                saveNavigatorState();
+            }
+        }
+
+        function exportNavigatorIndex() {
+            const dataStr = JSON.stringify(navigatorState.persistentIndex, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `terrain-index-${manifest.terrain.id}-${Date.now()}.json`;
+            link.click();
+            
+            URL.revokeObjectURL(url);
+        }
+
+        // ===========================================
+        // BUNDLE LOGIC - File Selection
+        // ===========================================
+        function selectBundleFile(files, mode, nodeId) {
+            if (!files || files.length === 0) return null;
+            if (files.length === 1) return files[0];
+            
+            const bundleState = getBundleState(nodeId);
+            let selectedIndex;
+            
+            if (mode === 'sequential') {
+                // Sequential: just increment and loop
+                selectedIndex = bundleState.currentIndex % files.length;
+                bundleState.currentIndex = (bundleState.currentIndex + 1) % files.length;
+                
+            } else if (mode === 'random') {
+                // Pure random
+                selectedIndex = Math.floor(Math.random() * files.length);
+                
+            } else if (mode === 'random_tracked') {
+                // Random but don't repeat until all played
+                let availableIndices = [];
+                for (let i = 0; i < files.length; i++) {
+                    if (!bundleState.playedIndices.includes(i)) {
+                        availableIndices.push(i);
+                    }
+                }
+                
+                // If all played, reset
+                if (availableIndices.length === 0) {
+                    bundleState.playedIndices = [];
+                    availableIndices = Array.from({ length: files.length }, (_, i) => i);
+                }
+                
+                // Pick random from available
+                selectedIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+                bundleState.playedIndices.push(selectedIndex);
+                
+            } else {
+                // Default to first file
+                selectedIndex = 0;
+            }
+            
+            saveBundleState(nodeId, bundleState);
+            
+            console.log(`Bundle [${mode}]: Selected ${files[selectedIndex]} (${selectedIndex + 1}/${files.length})`);
+            return files[selectedIndex];
+        }
+
+        function unlockAudio() {
+            if (audioUnlocked) return;
+            
+            console.log('Unlocking audio for iOS...');
+            
+            // Play and pause each audio element to unlock them
+            const unlockPromises = [
+                primaryAudio.play().then(() => primaryAudio.pause()),
+                aux1Audio.play().then(() => aux1Audio.pause()),
+                aux2Audio.play().then(() => aux2Audio.pause()),
+                transitionAudioA.play().then(() => transitionAudioA.pause()),
+                transitionAudioB.play().then(() => transitionAudioB.pause())
+            ];
+            
+            Promise.all(unlockPromises)
+                .then(() => {
+                    audioUnlocked = true;
+                    console.log('Audio unlocked');
+                })
+                .catch(e => {
+                    console.log('Audio unlock attempted:', e);
+                    audioUnlocked = true; // Mark as attempted anyway
+                });
+        }
+
+        // Key sound mapping
+        const keySoundMap = {
+            '0': 'assets/ui/key0.m4a',
+            '1': 'assets/ui/key1.m4a',
+            '2': 'assets/ui/key2.m4a',
+            '3': 'assets/ui/key3.m4a',
+            '4': 'assets/ui/key4.m4a',
+            '5': 'assets/ui/key5.m4a',
+            '6': 'assets/ui/key6.m4a',
+            '7': 'assets/ui/key7.m4a',
+            '8': 'assets/ui/key8.m4a',
+            '9': 'assets/ui/key9.m4a',
+            '*': 'assets/ui/keyStar.m4a',
+            '#': 'assets/ui/keyPound.m4a',
+            '@': 'assets/ui/key0.m4a',
+            '.': 'assets/ui/key0.m4a',
+            'DEL': 'assets/ui/keyStar.m4a',
+            'prev': 'assets/ui/key0.m4a',
+            'pause': 'assets/ui/key0.m4a',
+            'next': 'assets/ui/key0.m4a',
+            'enter': 'assets/ui/keyPound.m4a',
+            'start': 'assets/ui/keyPound.m4a'
+        };
+
+        // ===========================================
+        // ELEMENTS
+        // ===========================================
+        const inputField = document.getElementById('inputField');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const startHomeBtn = document.getElementById('startHomeBtn');
+        const indexBtn = document.getElementById('indexBtn');
+        const viewport = document.getElementById('viewport');
+        const linksArea = document.getElementById('linksArea');
+        const resumeBtn = document.getElementById('resumeBtn');
+
+        const carouselControls = document.getElementById('carouselControls');
+        const carouselNav = document.getElementById('carouselNav');
+        const carouselPrevBtn = document.getElementById('carouselPrev');
+        const carouselNextBtn = document.getElementById('carouselNext');
+        const carouselDots = document.getElementById('carouselDots');
+        const carouselCaption = document.getElementById('carouselCaption');
+        const viewportVideo = document.getElementById('viewportVideo');
+
+        // ===========================================
+        // VIDEO NODE STATE
+        // ===========================================
+        // States: null (no video), 'ready', 'playing', 'paused', 'ended'
+        let videoState = null;
+
+        function getActiveMediaElement() {
+            // Returns video element if video node is active, otherwise primaryAudio
+            if (currentNode?.video && videoState) {
+                return viewportVideo;
+            }
+            return primaryAudio;
+        }
+
+        function isVideoActive() {
+            return videoState === 'playing' || videoState === 'paused';
+        }
+
+        function startVideo() {
+            if (!currentNode?.video || !viewportVideo) return;
+            viewportVideo.style.display = 'block';
+            viewportVideo.muted = false;
+            viewportVideo.play().catch(e => console.log('Video play failed:', e));
+            videoState = 'playing';
+            startProgressUpdates();
+            updatePauseIcon();
+            console.log('Video started');
+        }
+
+        function restartVideo() {
+            if (!currentNode?.video || !viewportVideo) return;
+            viewportVideo.currentTime = 0;
+            if (videoState === 'ended') {
+                // Restart from ended state
+                viewportVideo.style.display = 'block';
+                viewportVideo.play().catch(e => console.log('Video replay failed:', e));
+                videoState = 'playing';
+                startProgressUpdates();
+            } else if (videoState === 'playing' || videoState === 'paused') {
+                // Just restart from beginning
+                viewportVideo.play().catch(e => console.log('Video restart failed:', e));
+                videoState = 'playing';
+                startProgressUpdates();
+            }
+            updatePauseIcon();
+            console.log('Video restarted');
+        }
+
+        function setupVideoEndHandler() {
+            viewportVideo.onended = () => {
+                console.log('Video ended');
+                videoState = 'ended';
+                viewportVideo.style.display = 'none';
+                
+                // Show end poster (or fall back to start poster)
+                const endPoster = currentNode.video.endPoster || currentNode.video.poster;
+                if (endPoster) {
+                    crossfadeToImage(endPoster);
+                }
+                
+                stopProgressUpdates();
+                // Keep progress bar full at end
+                progressBar.style.width = '100%';
+                progressText.textContent = formatTime(viewportVideo.duration) + ' / ' + formatTime(viewportVideo.duration);
+                
+                updatePauseIcon();
+            };
+        }
+
+        function teardownVideo() {
+            if (viewportVideo) {
+                viewportVideo.pause();
+                viewportVideo.style.display = 'none';
+                viewportVideo.onended = null;
+                viewportVideo.src = '';
+            }
+            videoState = null;
+        }
+
+        // ===========================================
+        // IMAGE CAROUSEL STATE
+        // ===========================================
+        let carouselImages = [];   // normalized: [{ src, caption }]
+        let carouselIndex = 0;
+        let carouselEnabled = false;
+        let swipeStartX = null;
+        let swipeStartY = null;
+
+        function renderCarouselDots(total, activeIndex){
+            const dotsEl = document.getElementById('carouselDots');
+            const navEl  = document.getElementById('carouselNav');
+            if (!dotsEl || !navEl) return;
+
+            if (!total || total <= 1){
+                navEl.style.display = 'none';
+                return;
+            }
+
+            navEl.style.display = 'flex';
+            dotsEl.innerHTML = '';
+
+            for (let i = 0; i < total; i++){
+                const dot = document.createElement('div');
+                dot.className = 'carousel-dot' + (i === activeIndex ? ' active' : '');
+                dotsEl.appendChild(dot);
+            }
+        }
+
+        function normalizeImages(node) {
+            const raw = Array.isArray(node?.images) ? node.images : [];
+            const normalized = raw
+                .map(item => {
+                    if (typeof item === 'string') return { src: item, caption: '' };
+                    if (item && typeof item === 'object') return { src: item.src || '', caption: item.caption || '' };
+                    return { src: '', caption: '' };
+                })
+                .filter(x => typeof x.src === 'string' && x.src.trim().length > 0)
+                .map(x => ({ src: x.src.trim(), caption: (x.caption || '').toString() }));
+            return normalized;
+        }
+
+        function hideCarousel() {
+            carouselEnabled = false;
+            carouselImages = [];
+            carouselIndex = 0;
+            carouselControls?.classList.remove('active');
+            if (carouselNav) carouselNav.style.display = 'none';
+            carouselCaption?.classList.remove('active');
+            if (carouselCaption) carouselCaption.textContent = '';
+            renderCarouselDots(0, 0);
+        }
+
+        function updateCarouselUI() {
+            if (!carouselEnabled) return;
+            const total = carouselImages.length || 1;
+            const idx = Math.min(Math.max(carouselIndex, 0), total - 1);
+            carouselIndex = idx;
+
+            renderCarouselDots(total, idx);
+
+            const cap = carouselImages[idx]?.caption || '';
+            if (carouselCaption) {
+                if (cap.trim().length > 0) {
+                    carouselCaption.textContent = cap;
+                    carouselCaption.classList.add('active');
+                } else {
+                    carouselCaption.textContent = '';
+                    carouselCaption.classList.remove('active');
+                }
+            }
+
+            // Only show controls when there's something to navigate
+            if (carouselControls) {
+                if (total > 1) carouselControls.classList.add('active');
+                else carouselControls.classList.remove('active');
+            }
+        }
+
+        function showCarouselForNode(node) {
+            const imgs = normalizeImages(node);
+            if (!imgs.length) {
+                hideCarousel();
+                return false;
+            }
+            carouselImages = imgs;
+            carouselIndex = 0;
+            carouselEnabled = true;
+            updateCarouselUI();
+            renderCarouselDots(carouselImages.length, carouselIndex);
+            // Display first image now
+            crossfadeToImage(carouselImages[0].src);
+            return true;
+        }
+
+        function carouselGo(delta) {
+            if (!carouselEnabled || carouselImages.length < 2) return;
+            const total = carouselImages.length;
+            carouselIndex = (carouselIndex + delta + total) % total;
+            updateCarouselUI();
+            renderCarouselDots(total, carouselIndex);
+            crossfadeToImage(carouselImages[carouselIndex].src);
+        }
+
+        carouselPrevBtn?.addEventListener('click', () => carouselGo(-1));
+        carouselNextBtn?.addEventListener('click', () => carouselGo(1));
+
+        // Swipe support (simple horizontal swipe)
+        viewport?.addEventListener('touchstart', (e) => {
+            if (!carouselEnabled || carouselImages.length < 2) return;
+            const t = e.touches?.[0];
+            if (!t) return;
+            swipeStartX = t.clientX;
+            swipeStartY = t.clientY;
+        }, { passive: true });
+
+        viewport?.addEventListener('touchend', (e) => {
+            if (!carouselEnabled || carouselImages.length < 2) return;
+            if (swipeStartX == null || swipeStartY == null) return;
+            const t = e.changedTouches?.[0];
+            if (!t) return;
+            const dx = t.clientX - swipeStartX;
+            const dy = t.clientY - swipeStartY;
+            swipeStartX = null;
+            swipeStartY = null;
+
+            // Ignore mostly-vertical gestures
+            if (Math.abs(dy) > Math.abs(dx)) return;
+            // Threshold
+            if (Math.abs(dx) < 40) return;
+            if (dx < 0) carouselGo(1);
+            else carouselGo(-1);
+        }, { passive: true });
+
+        // Keyboard arrows (desktop convenience)
+        document.addEventListener('keydown', (e) => {
+            if (!carouselEnabled || carouselImages.length < 2) return;
+            if (e.key === 'ArrowLeft') carouselGo(-1);
+            if (e.key === 'ArrowRight') carouselGo(1);
+        });
+
+        // ===========================================
+        // PROGRESS BAR
+        // ===========================================
+        let progressInterval = null;
+
+        function formatTime(seconds) {
+            if (isNaN(seconds) || !isFinite(seconds)) return '0:00';
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function updateProgressBar() {
+            // Handle video ready state (show duration at 0:00)
+            if (videoState === 'ready' && viewportVideo.duration > 0) {
+                progressBar.style.width = '0%';
+                progressText.textContent = `0:00 / ${formatTime(viewportVideo.duration)}`;
+                return;
+            }
+            
+            // Get active media element (video or audio)
+            const media = getActiveMediaElement();
+            
+            // Skip if no source or paused (unless video in ready/ended state)
+            if (!media.src || (media.paused && videoState !== 'ended') || isAddressMode || inputValue.length > 0) {
+                return;
+            }
+            
+            const current = media.currentTime;
+            const duration = media.duration;
+            if (duration > 0) {
+                const percent = (current / duration) * 100;
+                progressBar.style.width = `${percent}%`;
+                
+                // Show playlist track info if active (audio only)
+                let displayText = '';
+                if (!videoState && currentPlaylist) {
+                    const trackNum = currentPlaylist.currentTrack + 1;
+                    const totalTracks = currentPlaylist.files.length;
+                    displayText = `Track ${trackNum}/${totalTracks} - ${formatTime(current)} / ${formatTime(duration)}`;
+                } else {
+                    displayText = `${formatTime(current)} / ${formatTime(duration)}`;
+                }
+                
+                progressText.textContent = displayText;
+            }
+            
+            // Check for interruptible choices (audio only, not during video)
+            if (!videoState) {
+                checkInterruptibles();
+            }
+        }
+
+        function startProgressUpdates() {
+            stopProgressUpdates();
+            progressInterval = Timers.setInterval(updateProgressBar, 100);
+        }
+
+        function stopProgressUpdates() {
+            if (progressInterval) {
+                Timers.clearInterval(progressInterval);
+                progressInterval = null;
+            }
+        }
+
+        function clearProgressBar() {
+            progressBar.style.width = '0%';
+            progressText.textContent = '';
+        }
+
+        function checkInterruptibles() {
+            if (!currentNode || !currentNode.interruptible || !primaryAudio.src) return;
+            
+            const currentTime = primaryAudio.currentTime * 1000; // Convert to milliseconds
+            
+            currentNode.interruptible.forEach(choice => {
+                // Check if this choice should now be active
+                const isActive = activeInterruptibles.some(a => a.time === choice.time);
+                
+                if (currentTime >= choice.time && !isActive) {
+                    // Activate this interruptible choice
+                    activeInterruptibles.push(choice);
+                    console.log('Interruptible choice activated:', choice.label, 'at', choice.time, 'ms');
+                    
+                    // Show visual if one is defined at this timestamp
+                    showInterruptibleVisual(choice.time);
+                }
+            });
+        }
+
+        function showInterruptibleVisual(timestamp) {
+            if (!currentNode || !currentNode.visuals) return;
+            
+            // Find visual that starts at this timestamp
+            const visual = currentNode.visuals.find(v => v.start === timestamp);
+            if (visual && visual.type === 'image') {
+                crossfadeToImage(visual.src);
+            }
+        }
+
+        // Scrub on click (works for both audio and video)
+        inputField.addEventListener('click', (e) => {
+            if (isAddressMode || inputValue.length > 0) return;
+            
+            const media = getActiveMediaElement();
+            if (!media.src || !media.duration) return;
+            
+            // Don't allow seeking in video ready state (must start first)
+            if (videoState === 'ready') return;
+            
+            const rect = inputField.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const percent = clickX / rect.width;
+            media.currentTime = percent * media.duration;
+            updateProgressBar();
+        });
+
+        // ===========================================
+        // PRELOAD KEY SOUNDS
+        // ===========================================
+        const preloadedKeySounds = {};
+        const uniqueSoundFiles = [...new Set(Object.values(keySoundMap))];
+        uniqueSoundFiles.forEach(src => {
+            const audio = new Audio();
+            audio.src = src;
+            audio.preload = 'auto';
+            preloadedKeySounds[src] = audio;
+        });
+
+        // ===========================================
+        // AUDIO HELPERS
+        // ===========================================
+        function playKeySound(key) {
+            // Disabled for testing
+            return;
+        }
+        
+        function stopKeySound() {
+            // No longer looping, but keep this for cleanup
+            keySound.pause();
+            keySound.currentTime = 0;
+        }
+
+        function stopAllContentAudio() {
+            primaryAudio.pause();
+            primaryAudio.currentTime = 0;
+            primaryAudio.src = '';  // ADD THIS
+
+            aux1Audio.pause();
+            aux1Audio.currentTime = 0;
+            aux1Audio.src = '';  // ADD THIS
+
+            aux2Audio.pause();
+            aux2Audio.currentTime = 0;
+            aux2Audio.src = '';  // ADD THIS
+
+            if (aux1CrossfadeInterval) {
+                Timers.clearInterval(aux1CrossfadeInterval);
+                aux1CrossfadeInterval = null;
+            }
+            aux1CrossfadeAudio.pause();
+            aux1CrossfadeAudio.src = '';  // ADD THIS
+
+        }
+
+        function fadeInAux(audioElement, targetVolume, duration) {
+            audioElement.volume = 0;
+            audioElement.play().then(() => {
+                // Force the target volume after play succeeds (helps with mobile)
+                const startTime = Date.now();
+                const fadeInterval = Timers.setInterval(() => {
+                    const elapsed = Date.now() - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    audioElement.volume = progress * targetVolume;
+                    
+                    if (progress >= 1) {
+                        Timers.clearInterval(fadeInterval);
+                    }
+                }, 50);
+            }).catch(e => console.log('Aux audio failed:', e));
+        }
+
+        function setupAux1Crossfade(audioSrc, crossfadeDuration) {
+            // Monitor aux1 and trigger crossfade near the end
+            aux1CrossfadeInterval = Timers.setInterval(() => {
+                if (!aux1Audio.paused && aux1Audio.duration > 0) {
+                    const timeRemaining = aux1Audio.duration - aux1Audio.currentTime;
+                    
+                    // Start crossfade when remaining time equals crossfade duration
+                    if (timeRemaining <= crossfadeDuration / 1000 && aux1CrossfadeAudio.paused) {
+                        // Set up the crossfade audio
+                        aux1CrossfadeAudio.src = audioSrc;
+                        aux1CrossfadeAudio.volume = 0;
+                        aux1CrossfadeAudio.currentTime = 0;
+                        aux1CrossfadeAudio.play().catch(e => console.log('Crossfade audio failed:', e));
+                        
+                        // Crossfade: fade out aux1, fade in aux1Crossfade
+                        const startTime = Date.now();
+                        const fadeInterval = Timers.setInterval(() => {
+                            const elapsed = Date.now() - startTime;
+                            const progress = Math.min(elapsed / crossfadeDuration, 1);
+                            
+                            const targetVolume = 1.0;
+
+                            // Equal power crossfade using cosine/sine curves
+                            aux1Audio.volume = targetVolume * Math.cos(progress * Math.PI / 2);
+                            aux1CrossfadeAudio.volume = targetVolume * Math.sin(progress * Math.PI / 2);
+                            
+                            if (progress >= 1) {
+                                Timers.clearInterval(fadeInterval);
+                                // Swap: crossfade becomes main, prepare for next loop
+                                aux1Audio.pause();
+                                aux1Audio.currentTime = 0;
+                                aux1Audio.volume = 1.0;
+                                
+                                // Swap the audio elements
+                                const temp = aux1Audio;
+                                aux1Audio = aux1CrossfadeAudio;
+                                aux1CrossfadeAudio = temp;
+                                aux1CrossfadeAudio.src = ''; // Clear for next use
+                                aux1CrossfadeAudio.pause(); // Make sure it's paused
+                            }
+                        }, 50);
+                    }
+                }
+            }, 100); // Check every 100ms
+        }
+
+        // Convert dB adjustment to volume multiplier
+        function dbToVolume(db) {
+            return Math.pow(10, db / 20);
+        }
+
+        // ===========================================
+        // LOAD MANIFEST
+        // ===========================================
+        async function loadManifest() {
+            PerfMonitor.start('manifest-load');
+            try {
+                const response = await fetch('manifest.json');
+                if (!response.ok) throw new Error('Failed to load manifest.json');
+                manifest = await response.json();
+                PerfMonitor.end('manifest-load', `${Object.keys(manifest.nodes || {}).length} nodes`);
+                console.log('Manifest loaded:', manifest.terrain.title);
+                
+                // Load navigator state after manifest is loaded
+                loadNavigatorState();
+                
+            } catch (error) {
+                console.error('Error loading manifest:', error);
+                viewport.innerHTML = `<div class="error">Error loading manifest.json<br><small>${error.message}</small></div>`;
+            }
+        }
+
+        // ===========================================
+        // ADDRESS NORMALIZATION
+        // ===========================================
+        function normalizeAddress(input) {
+            // Remove @ if present at start
+            let addr = input.startsWith('@') ? input.slice(1) : input;
+            
+            // Split on decimal
+            let parts = addr.split('.');
+            let main = parts[0] || '0';
+            let subRaw = parts[1] || '0';
+            
+            // Pad main to 4 digits
+            main = main.padStart(4, '0');
+            
+            // Allow 1-2 digits after decimal (no float parsing)
+            let sub = subRaw.slice(0, 2);
+            if (sub.length === 0) sub = '0';
+            
+            return `${main}.${sub}`;
+        }
+
+        // ===========================================
+        // NODE NAVIGATION
+        // ===========================================
+        function markStarted() {
+            if (appStarted) return;
+            appStarted = true;
+            if (startHomeBtn) {
+                renderStartHomeButton('home');
+                startHomeBtn.classList.remove('highlighted');
+                startHomeBtn.classList.remove('awaiting-start');
+            }
+        }
+
+        function resolveNode(nodeId) {
+            if (!manifest) return null;
+            const node = manifest.nodes.find(n => n.id === nodeId);
+            if (!node) console.error('Node not found:', nodeId);
+            return node || null;
+        }
+
+        function teardownCurrentNode() {
+            Timers.clearAll();
+
+            activeInterruptibles = [];
+            stopProgressUpdates();
+            clearProgressBar();
+
+            // Clear audio handlers before stopping audio
+            primaryAudio.onended = null;
+            primaryAudio.ontimeupdate = null;
+            primaryAudio.onloadedmetadata = null;
+
+            transitionAudioA.onended = null;
+            transitionAudioA.ontimeupdate = null;
+            transitionAudioA.onloadedmetadata = null;
+
+            transitionAudioB.onended = null;
+            transitionAudioB.ontimeupdate = null;
+            transitionAudioB.onloadedmetadata = null;
+
+            stopAllContentAudio();
+            currentPlaylist = null;
+
+            // Teardown video if active
+            teardownVideo();
+
+            // Reset carousel state for next node
+            hideCarousel();
+        }
+
+        function prepareNode(node) {
+            // Add to navigator tracking
+            addToNavigator(node);
+
+            // VIDEO NODE: Load video and show poster
+            if (node.video && node.video.src) {
+                console.log('Preparing video node:', node.id);
+                
+                // Show start poster image
+                if (node.video.poster) {
+                    crossfadeToImage(node.video.poster);
+                }
+                
+                // Preload video (muted until user starts it)
+                viewportVideo.src = node.video.src;
+                viewportVideo.muted = true;
+                viewportVideo.load();
+                
+                // Setup ended handler
+                setupVideoEndHandler();
+                
+                // Set state to loading (will become ready when metadata loads)
+                videoState = 'loading';
+                
+                // When video metadata loads, update progress display and set ready
+                viewportVideo.onloadedmetadata = () => {
+                    console.log('Video metadata loaded, duration:', viewportVideo.duration);
+                    videoState = 'ready';
+                    updateProgressBar(); // Show 0:00 / duration
+                };
+                
+                // Links still work on video nodes
+                updateLinks(node.links || []);
+                return;
+            }
+
+            // Visuals / Images
+            // If node.images[] exists, we treat it as a carousel and display images[0] by default.
+            // Otherwise we fall back to node.visuals[] behavior.
+            const usedCarousel = showCarouselForNode(node);
+            if (!usedCarousel) {
+                // Visuals
+                if (node.visuals && node.visuals.length > 0) {
+                    const visual = node.visuals[0];
+                    if (visual.type === 'image') {
+                        crossfadeToImage(visual.src);
+                    } else if (visual.type === 'video') {
+                        viewport.innerHTML = '';
+                        const video = document.createElement('video');
+                        video.src = visual.src;
+                        video.autoplay = true;
+                        video.controls = false;
+                        video.playsInline = true;
+                        video.muted = true;
+                        viewport.appendChild(video);
+                    }
+                }
+            }
+
+            // Links
+            updateLinks(node.links || []);
+        }
+
+        function enterNode(node, versionAtEnter) {
+            // VIDEO NODE: Skip audio setup, video waits for GO key
+            if (node.video && node.video.src) {
+                console.log('Video node ready, press GO to start');
+                // Progress bar already shows 0:00 / duration from prepareNode
+                return;
+            }
+            
+            // PRIMARY AUDIO: single / bundle / playlist
+            if (node.audio) {
+                let audioFile = null;
+                let isPlaylist = false;
+
+                if (node.audio.type === 'bundle' && node.audio.files?.length) {
+                    audioFile = selectBundleFile(node.audio.files, node.audio.mode, node.id);
+                } else if (node.audio.type === 'playlist' && node.audio.source) {
+                    isPlaylist = true;
+                    loadPlaylist(node.id, node.audio.source, versionAtEnter);
+                } else if (node.audio.primary) {
+                    audioFile = node.audio.primary;
+                }
+
+                if (audioFile && !isPlaylist) {
+                    PerfMonitor.start('audio-load-' + node.id);
+                    primaryAudio.src = audioFile;
+                    primaryAudio.loop = false;
+                    
+                    // Track audio load time
+                    const audioLoadHandler = () => {
+                        PerfMonitor.end('audio-load-' + node.id);
+                        primaryAudio.removeEventListener('canplay', audioLoadHandler);
+                    };
+                    primaryAudio.addEventListener('canplay', audioLoadHandler);
+
+                    const timingDelay = node.audio.primaryTiming || 0;
+
+                    const startPrimary = withNavGuard(() => {
+                        primaryAudio.play().catch(e => console.log('Audio autoplay prevented:', e));
+                        startProgressUpdates();
+                    }, versionAtEnter);
+
+                    if (timingDelay > 0) Timers.setTimeout(startPrimary, timingDelay);
+                    else startPrimary();
+                }
+            }
+
+            // AUX1
+            if (node.audio?.aux1) {
+                // Reset any existing crossfade state
+                if (aux1CrossfadeInterval) {
+                    Timers.clearInterval(aux1CrossfadeInterval);
+                    aux1CrossfadeInterval = null;
+                }
+                aux1CrossfadeAudio.pause();
+                aux1CrossfadeAudio.src = '';
+
+                aux1Audio.src = node.audio.aux1;
+                const crossfadeDuration = node.audio.aux1Crossfade || 0;
+
+                if (crossfadeDuration > 0) {
+                    aux1Audio.loop = false;
+                    setupAux1Crossfade(node.audio.aux1, crossfadeDuration);
+                } else {
+                    aux1Audio.loop = true;
+                }
+
+                const auxDelay = node.audio.aux1Timing || 0;
+                const startAux = withNavGuard(() => fadeInAux(aux1Audio, 1.0, AUX_FADE_DURATION), versionAtEnter);
+                if (auxDelay > 0) Timers.setTimeout(startAux, auxDelay);
+                else startAux();
+            } else {
+                aux1Audio.src = '';
+                if (aux1CrossfadeInterval) {
+                    Timers.clearInterval(aux1CrossfadeInterval);
+                    aux1CrossfadeInterval = null;
+                }
+            }
+
+            // DESTINATION autoNext behavior (transition semantics)
+            if (node.type === 'destination' && node.autoNext && node.audio?.primary) {
+                const transitionTiming = node.transition?.timing || 0;
+
+                const goNext = withNavGuard(() => {
+                    stopProgressUpdates();
+                    playTransitionThen(
+                        withNavGuard(() => loadNode(node.autoNext), versionAtEnter),
+                        node
+                    );
+                }, versionAtEnter);
+
+                if (transitionTiming < 0 && node.transition?.audio) {
+                    primaryAudio.ontimeupdate = withNavGuard(() => {
+                        if (primaryAudio.duration > 0) {
+                            const remaining = primaryAudio.duration - primaryAudio.currentTime;
+                            const prerollSeconds = Math.abs(transitionTiming) / 1000;
+                            if (remaining <= prerollSeconds) {
+                                primaryAudio.ontimeupdate = null;
+                                goNext();
+                            }
+                        }
+                    }, versionAtEnter);
+                } else {
+                    safeSetOnEnded(primaryAudio, goNext, versionAtEnter);
+                }
+            }
+        }
+
+        function loadNode(nodeId) {
+            PerfMonitor.start('loadNode-total');
+            if (!manifest) return;
+            markStarted();
+
+            // If we're leaving the initial loading phase, cancel the start fallback timer.
+            if (startFallbackTimeoutId) {
+                Timers.clearTimeout(startFallbackTimeoutId);
+                startFallbackTimeoutId = null;
+            }
+
+            PerfMonitor.start('resolveNode');
+            const node = resolveNode(nodeId);
+            PerfMonitor.end('resolveNode');
+            if (!node) return;
+
+            // Track the user's path through the installation (including autoNext and Index jumps)
+            recordHistory(node.id);
+
+            // New node load = new version (invalidates stale callbacks)
+            const versionAtEnter = bumpNavVersion();
+
+            // Clear bookmark if navigating via auto-advance (not via DEL return)
+            if (currentNode && currentNode.type === 'destination' && currentNode.autoNext === nodeId) {
+                audioBookmark = null;
+            }
+
+            currentNode = node;
+            console.log('Loading node:', node.id, node.title);
+
+            PerfMonitor.start('teardownCurrentNode');
+            teardownCurrentNode();
+            PerfMonitor.end('teardownCurrentNode');
+            
+            PerfMonitor.start('prepareNode');
+            prepareNode(node);
+            PerfMonitor.end('prepareNode', node.id);
+            
+            PerfMonitor.start('enterNode');
+            enterNode(node, versionAtEnter);
+            PerfMonitor.end('enterNode', node.id);
+            
+            PerfMonitor.end('loadNode-total', node.id);
+        }
+
+        function playTransitionThen(callback, transitionNode = currentNode) {
+            PerfMonitor.start('transition');
+            const versionAtSchedule = navVersion;
+            const originalCallback = callback;
+            const guardedCallback = withNavGuard(() => {
+                PerfMonitor.end('transition', transitionNode?.id || 'unknown');
+                originalCallback();
+            }, versionAtSchedule);
+
+            // Stop all content audio first
+            stopAllContentAudio();
+            
+            // Allow passing a custom transition object
+            let transition;
+            if (transitionNode && transitionNode.transition) {
+                // It's a node with a transition property
+                transition = transitionNode.transition;
+            } else if (transitionNode && transitionNode.audio) {
+                // Assume it's a transition object itself (has audio property)
+                transition = transitionNode;
+            } else {
+                // Fallback: try to get transition from node
+                transition = transitionNode?.transition;
+            }
+            
+            // Determine which audio file to use (bundle or single)
+            let transitionAudioFile = null;
+            
+            if (transition && transition.type === 'bundle' && transition.files && transition.files.length > 0) {
+                // BUNDLE TRANSITION: Select file based on mode
+                const nodeId = transitionNode?.id || 'transition';
+                transitionAudioFile = selectBundleFile(transition.files, transition.mode, `${nodeId}_transition`);
+            } else if (transition && transition.audio) {
+                // SINGLE TRANSITION: Use the audio property
+                transitionAudioFile = transition.audio;
+            }
+            
+            if (transitionAudioFile) {
+                // Select the transition element that's NOT currently in use
+                const transitionAudio = useTransitionA ? transitionAudioA : transitionAudioB;
+                useTransitionA = !useTransitionA; // Flip for next time
+                
+                // Clear any lingering handlers from previous use
+                transitionAudio.onended = null;
+                transitionAudio.onloadedmetadata = null;
+                transitionAudio.ontimeupdate = null;
+                
+                // Set up the new transition
+                transitionAudio.src = transitionAudioFile;
+                
+                // Apply volume adjustment if specified
+                const volumeAdjustment = transition.volume || 0;
+                transitionAudio.volume = dbToVolume(volumeAdjustment);
+                
+                const timingOffset = transition.timing || 0;
+                
+                // Start playing the transition
+                transitionAudio.play().catch(e => {
+                    console.log('Transition audio failed:', e);
+                    guardedCallback();
+                    return;
+                });
+                
+                // Calculate when to trigger the callback (load next node)
+                if (timingOffset === 0) {
+                    // Standard behavior: wait for transition to end
+                    safeSetOnEnded(transitionAudio, guardedCallback, versionAtSchedule);
+                } else {
+                    // Calculate delay for callback
+                    let callbackDelay;
+                    
+                    // Wait for transition metadata to load so we know its duration
+                    if (transitionAudio.duration && !isNaN(transitionAudio.duration)) {
+                        // Duration already known
+                        callbackDelay = calculateCallbackDelay(transitionAudio.duration, timingOffset);
+                        Timers.setTimeout(guardedCallback, callbackDelay);
+                    } else {
+                        // Wait for metadata to load
+                        transitionAudio.onloadedmetadata = withNavGuard(() => {
+                            callbackDelay = calculateCallbackDelay(transitionAudio.duration, timingOffset);
+                            console.log('Transition overlap - duration:', transitionAudio.duration, 
+                                       'offset:', timingOffset, 'delay:', callbackDelay);
+                            Timers.setTimeout(guardedCallback, callbackDelay);
+                        }, versionAtSchedule);
+                    }
+                    
+                    // No backup onended handler - let it just play out naturally
+                    // The setTimeout handles the callback timing
+                }
+            } else {
+                guardedCallback();
+            }
+        }
+
+        function calculateCallbackDelay(transitionDuration, timingOffset) {
+            const durationMs = transitionDuration * 1000;
+            
+            if (timingOffset > 0) {
+                // Positive: start next node X ms after transition begins
+                return timingOffset;
+            } else {
+                // Negative: start next node X ms before transition ends
+                // For example: 3000ms transition, -500ms offset = start at 2500ms
+                return Math.max(0, durationMs + timingOffset); // clamp to avoid negative delay
+            }
+        }
+
+        function updateLinks(links) {
+            // Clear existing links except support
+            const supportLink = linksArea.querySelector('.support-link');
+            linksArea.innerHTML = '';
+            
+            // Add node-specific links
+            links.forEach(link => {
+                const a = document.createElement('a');
+                a.href = link.url;
+                a.target = '_blank';
+                a.className = 'external-link';
+                a.textContent = link.text;
+                linksArea.appendChild(a);
+            });
+            
+            // Re-add support link
+            linksArea.appendChild(supportLink);
+        }
+
+        function crossfadeToImage(newSrc) {
+            PerfMonitor.start('crossfade-' + newSrc.split('/').pop());
+            const imageA = document.getElementById('viewportImageA');
+            const imageB = document.getElementById('viewportImageB');
+            
+            // Determine which image is currently active
+            const activeImage = imageA.classList.contains('active') ? imageA : imageB;
+            const inactiveImage = activeImage === imageA ? imageB : imageA;
+            
+            // Preload new image
+            const loadStart = performance.now();
+            const tempImg = new Image();
+            tempImg.onload = () => {
+                const loadTime = Math.round(performance.now() - loadStart);
+                if (loadTime > 100) {
+                    PerfMonitor.warn(`Image load took ${loadTime}ms: ${newSrc.split('/').pop()}`);
+                }
+                
+                // Set new image source on inactive layer
+                inactiveImage.src = newSrc;
+                
+                // Position new image on top (z-index 2) but invisible
+                inactiveImage.style.zIndex = '2';
+                inactiveImage.style.opacity = '0';
+                
+                // Force reflow to ensure opacity 0 is applied before transition
+                void inactiveImage.offsetWidth;
+                
+                // Fade IN new image (old image stays fully visible underneath)
+                inactiveImage.style.opacity = '1';
+                
+                // After transition completes, swap active state and reset z-index
+                setTimeout(() => {
+                    activeImage.classList.remove('active');
+                    activeImage.style.opacity = '0';
+                    activeImage.style.zIndex = '';
+                    
+                    inactiveImage.classList.add('active');
+                    inactiveImage.style.zIndex = '';
+                    PerfMonitor.end('crossfade-' + newSrc.split('/').pop());
+                }, 420); // Slightly longer than 400ms transition
+            };
+            tempImg.onerror = () => {
+                PerfMonitor.warn(`Image failed to load: ${newSrc}`);
+            };
+            tempImg.src = newSrc;
+        }
+
+        // ===========================================
+        // INPUT HANDLING
+        // ===========================================
+        function updateInputDisplay() {
+            if (inputValue.length > 0) {
+                // User is typing - show their input, hide progress
+                progressText.textContent = inputValue;
+                progressBar.style.width = '0%';
+                inputField.classList.add('active');
+            } else {
+                // Not typing - show progress bar if audio playing
+                inputField.classList.remove('active');
+                updateProgressBar();
+            }
+        }
+
+        function flashInvalidInput() {
+            if (!inputField) return;
+            inputField.classList.add('invalid');
+            Timers.setTimeout(() => inputField.classList.remove('invalid'), 180);
+        }
+
+        function hasTwoDigitChoicesAvailable() {
+            if (!currentNode) return false;
+
+            const isTwoDigitKey = (k) => typeof k === 'string' && /^\d\d$/.test(k);
+
+            const nodeChoices = (currentNode.choices || []).some(c => isTwoDigitKey(c.key));
+            if (nodeChoices) return true;
+
+            // activeInterruptibles already represents currently-available interrupt keys
+            const activeInts = (activeInterruptibles || []).some(c => isTwoDigitKey(c.key));
+            return activeInts;
+        }
+
+        function updateRtnDelButton() {
+            const btn = document.getElementById('rtnDelBtn');
+            if (!btn) return;
+
+            const hasBookmark = !!audioBookmark;
+            const hasHistory = canGoBackInHistory();
+
+            if (isAddressMode) {
+                // Address mode: DEL function
+                btn.classList.add('address-mode');
+                btn.classList.remove('has-bookmark');
+                btn.classList.remove('has-history');
+                setBtnIcon(btn, iconBackspace(), 'Delete');
+            } else if (inputValue !== '' || isTwoDigitMode) {
+                // User has input (or is entering a two-digit choice): show DEL
+                btn.classList.remove('has-bookmark');
+                btn.classList.remove('address-mode');
+                btn.classList.remove('has-history');
+                setBtnIcon(btn, iconBackspace(), 'Delete');
+            } else if (hasBookmark) {
+                // Has bookmark: show RTN, return function
+                btn.classList.add('has-bookmark');
+                btn.classList.remove('address-mode');
+                btn.classList.remove('has-history');
+                setBtnIcon(btn, iconArrowUturnLeft(), 'Return');
+            } else if (hasHistory) {
+                // No bookmark: RTN acts as Back if we have history
+                btn.classList.remove('has-bookmark');
+                btn.classList.remove('address-mode');
+                btn.classList.add('has-history');
+                setBtnIcon(btn, iconArrowUturnLeft(), 'Back');
+            } else {
+                // No bookmark and no history: show RTN but grayed out
+                btn.classList.remove('has-bookmark');
+                btn.classList.remove('address-mode');
+                btn.classList.remove('has-history');
+                setBtnIcon(btn, iconArrowUturnLeft(), 'Return');
+            }
+        }
+
+        function updateAddressModeOverlay() {
+            const overlay = document.getElementById('addressModeOverlay');
+            if (!overlay) return;
+            
+            if (isAddressMode) {
+                overlay.classList.add('active');
+            } else {
+                overlay.classList.remove('active');
+            }
+        }
+
+        function renderStaticIcons() {
+            // GO = check-circle
+            const goBtn = getKeyBtn('#');
+            setBtnIcon(goBtn, iconCheckCircle(), 'Go');
+
+            // Transport icons
+            setBtnIcon(getKeyBtn('prev'), iconRewind(), 'Restart');
+            setBtnIcon(getKeyBtn('next'), iconForward(), 'Skip forward');
+
+            // Pause icon is stateful; set the preferred default here
+            updatePauseIcon(true);
+        }
+
+        function updatePauseIcon(forceDefaultPause = false) {
+            const btn = getKeyBtn('pause');
+            if (!btn) return;
+
+            // Get active media element
+            const media = getActiveMediaElement();
+            
+            // User preference: on init (nothing loaded yet), show PAUSE (not PLAY)
+            const hasMediaLoaded = !!(media && media.src && media.src !== '');
+            if (forceDefaultPause || !hasMediaLoaded) {
+                setBtnIcon(btn, iconPause(), 'Pause');
+                return;
+            }
+
+            // If media exists: show PLAY when paused, PAUSE when playing
+            const showPlay = !!media.paused;
+            setBtnIcon(btn, showPlay ? iconPlay() : iconPause(), showPlay ? 'Play' : 'Pause');
+        }
+
+        function executeChoice(key) {
+            if (!currentNode) return false;
+            
+            // Block choices during video playback (playing or paused)
+            if (isVideoActive()) {
+                console.log('Choice ignored during video playback');
+                return false;
+            }
+            
+            // First check regular choices
+            if (currentNode.choices) {
+                const choice = currentNode.choices.find(c => c.key === key);
+                if (choice && choice.target) {
+                    console.log('Executing choice:', choice.label, '→', choice.target);
+                    
+                    // Clear bookmark when making any navigation choice
+                    audioBookmark = null;
+                    updateRtnDelButton();
+                    
+                    // IMPORTANT: Save reference to current node before transition
+                    const sourceNode = currentNode;
+                    playTransitionThen(() => {
+                        loadNode(choice.target);
+                    }, sourceNode);
+                    return true;
+                }
+            }
+            
+            // Then check active interruptible choices
+            const interruptible = activeInterruptibles.find(c => c.key === key);
+            if (interruptible && interruptible.target) {
+                console.log('Executing interruptible choice:', interruptible.label, '→', interruptible.target);
+                
+                // Save bookmark before jumping
+                audioBookmark = {
+                    nodeId: currentNode.id,
+                    timestamp: primaryAudio.currentTime,
+                    returnTransition: currentNode.returnTransition || null,
+                    returnPreroll: currentNode.returnPreroll || 3000
+                };
+                console.log('Bookmark saved:', audioBookmark);
+                updateRtnDelButton();
+                
+                // IMPORTANT: Save reference to current node before transition
+                const sourceNode = currentNode;
+                playTransitionThen(() => {
+                    loadNode(interruptible.target);
+                }, sourceNode);
+                return true;
+            }
+            
+            return false;
+        }
+
+        function handleKey(key) {
+            // Sound is played on mousedown, not here
+            
+            // Block all input until app is started via power button
+            if (!appStarted) {
+                console.log('Keypad disabled until app starts');
+                return;
+            }
+            
+            if (key === 'DEL') {
+                // Video replay: DEL restarts video during playback/paused/ended
+                if (isVideoActive() || videoState === 'ended') {
+                    restartVideo();
+                    return;
+                }
+                
+                if (isAddressMode || inputValue !== '') {
+                    // In address mode or has input: DELETE function
+                    inputValue = inputValue.slice(0, -1);
+                    if (inputValue === '' || inputValue === '@') {
+                        isAddressMode = false;
+                        inputValue = '';
+                    }
+                    updateInputDisplay();
+                    updateRtnDelButton();
+                    updateAddressModeOverlay();
+                } else if (audioBookmark) {
+                    // Has bookmark and no input: RETURN function
+                    console.log('Returning to bookmark:', audioBookmark);
+                    const bookmark = audioBookmark;
+                    audioBookmark = null; // Clear bookmark before navigation
+                    updateRtnDelButton();
+                    
+                    // Play return transition if specified, otherwise use standard transition
+                    const sourceNode = currentNode;
+                    const hasReturnTransition = bookmark.returnTransition && bookmark.returnTransition !== '';
+                    const resumeBookmark = () => {
+                        const resumeVersion = navVersion;
+                        Timers.setTimeout(withNavGuard(() => {
+                            if (primaryAudio.src) {
+                                const preroll = bookmark.returnPreroll || 3000;
+                                const resumeTime = Math.max(0, bookmark.timestamp - (preroll / 1000));
+                                primaryAudio.currentTime = resumeTime;
+                                primaryAudio.play().catch(e => console.log('Resume failed:', e));
+                                startProgressUpdates();
+                                console.log(`Resumed at ${resumeTime}s (bookmark: ${bookmark.timestamp}s, pre-roll: ${preroll}ms)`);
+                            }
+                        }, resumeVersion), 100);
+                    };
+                    
+                    if (hasReturnTransition) {
+                        // Use custom return transition
+                        playTransitionThen(() => {
+                            loadNode(bookmark.nodeId);
+                            // Resume with pre-roll
+                            resumeBookmark();
+                        }, { 
+                            transition: { 
+                                audio: bookmark.returnTransition,
+                                volume: sourceNode.transition?.volume || 0
+                            } 
+                        });
+                    } else {
+                        // Use source node's standard transition
+                        playTransitionThen(() => {
+                            loadNode(bookmark.nodeId);
+                            // Resume with pre-roll
+                            resumeBookmark();
+                        }, sourceNode);
+                    }
+                } else if (canGoBackInHistory()) {
+                    // No bookmark: RTN acts as Back through session history
+                    goBackInHistory();
+                }
+                // If no bookmark and no history, RTN does nothing (button is grayed out)
+            } else if (key === '@') {
+                // Address mode toggle should be idempotent: '@' always exits if we're in (or showing) address mode.
+                const showingAddressPrefix = (typeof inputValue === 'string' && inputValue.startsWith('@'));
+                if (isAddressMode || showingAddressPrefix) {
+                    isAddressMode = false;
+                    inputValue = '';
+                    isTwoDigitMode = false;
+                    twoDigitBuffer = '';
+                    updateInputDisplay();
+                    updateRtnDelButton();
+                    updateAddressModeOverlay();
+                } else {
+                    // Enter address mode
+                    isAddressMode = true;
+                    isTwoDigitMode = false;
+                    twoDigitBuffer = '';
+                    inputValue = '@';
+                    updateInputDisplay();
+                    updateRtnDelButton();
+                    updateAddressModeOverlay();
+                }
+            } else if (key === 'prev') {
+                // Restart from beginning
+                if (isVideoActive()) {
+                    // Restart video
+                    restartVideo();
+                } else {
+                    // Restart main audio (doesn't affect background)
+                    console.log('Prev pressed. primaryAudio.src:', primaryAudio.src, 'currentNode:', currentNode?.id);
+                    if (primaryAudio.src && primaryAudio.src !== '') {
+                        primaryAudio.currentTime = 0;
+                        primaryAudio.play().catch(e => console.log('Audio play failed:', e));
+                        startProgressUpdates();
+                    } else if (currentNode && currentNode.audio && currentNode.audio.primary) {
+                        // Audio source was cleared, reload it
+                        primaryAudio.src = currentNode.audio.primary;
+                        primaryAudio.currentTime = 0;
+                        primaryAudio.play().catch(e => console.log('Audio play failed:', e));
+                        startProgressUpdates();
+                    }
+                }
+            } else if (key === 'pause') {
+                // Toggle pause/play
+                if (isVideoActive()) {
+                    // Toggle video pause
+                    if (viewportVideo.paused) {
+                        viewportVideo.play();
+                        videoState = 'playing';
+                        startProgressUpdates();
+                    } else {
+                        viewportVideo.pause();
+                        videoState = 'paused';
+                        stopProgressUpdates();
+                    }
+                } else {
+                    // Toggle audio pause
+                    if (primaryAudio.paused) {
+                        primaryAudio.play();
+                        if (aux1Audio.src) aux1Audio.play();
+                        startProgressUpdates();
+                    } else {
+                        primaryAudio.pause();
+                        aux1Audio.pause();
+                        stopProgressUpdates();
+                    }
+                }
+                updatePauseIcon();
+            } else if (key === 'next') {
+                // Fast forward - skip ahead 10 seconds
+                const media = getActiveMediaElement();
+                if (media.src) {
+                    media.currentTime = Math.min(media.duration, media.currentTime + 10);
+                    updateProgressBar();
+                }
+            } else if (key === '#') {
+                // # is the GO button
+                handleEnter();
+                return;
+            } else if (key === '*') {
+                // Two-digit choice mode: only enter when it can possibly succeed.
+                if (isAddressMode) return;
+
+                // Pressing '*' again cancels two-digit mode
+                if (isTwoDigitMode) {
+                    isTwoDigitMode = false;
+                    twoDigitBuffer = '';
+                    inputValue = '';
+                    updateInputDisplay();
+                    return;
+                }
+
+                if (!hasTwoDigitChoicesAvailable()) {
+                    flashInvalidInput();
+                    return;
+                }
+
+                isTwoDigitMode = true;
+                twoDigitBuffer = '';
+                inputValue = '*';
+                updateInputDisplay();
+                return;
+            } else if (key === '.') {
+                // Decimal only valid in address mode
+                if (isAddressMode) {
+                    // Don't allow '.' as the first meaningful character after '@'
+                    if (inputValue === '@' || inputValue.endsWith('.')) {
+                        flashInvalidInput();
+                    } else {
+                        inputValue += key;
+                        updateInputDisplay();
+                    }
+                }
+            } else {
+                // Number keys 0-9
+                if (isTwoDigitMode) {
+                    // Collect digits for two-digit choice
+                    twoDigitBuffer += key;
+                    inputValue = '*' + twoDigitBuffer;
+                    updateInputDisplay();
+                    
+                    if (twoDigitBuffer.length === 2) {
+                        // Auto-execute two-digit choice
+                        const choiceKey = twoDigitBuffer;
+                        isTwoDigitMode = false;
+                        twoDigitBuffer = '';
+                        inputValue = '';
+                        updateInputDisplay();
+                        
+                        if (!executeChoice(choiceKey)) {
+                            console.log('Two-digit choice not found:', choiceKey);
+                        }
+                    }
+                } else if (isAddressMode) {
+                    // In address mode, accumulate digits
+                    inputValue += key;
+                    updateInputDisplay();
+                } else {
+                    // Not in address mode - try to execute as choice immediately
+                    if (!executeChoice(key)) {
+                        // No matching choice - show in input field briefly
+                        inputValue = key;
+                        updateInputDisplay();
+                        Timers.setTimeout(withNavGuard(() => {
+                            inputValue = '';
+                            updateInputDisplay();
+                        }), 500);
+                    } else {
+                        // Choice executed - clear any input display
+                        inputValue = '';
+                        updateInputDisplay();
+                    }
+                }
+            }
+        }
+
+        function handleEnter() {
+            // Sound is played on mousedown/keydown, not here
+            
+            // Video: GO starts video when in ready state
+            if (videoState === 'ready') {
+                startVideo();
+                return;
+            }
+            
+            if (inputValue.length === 0) return;
+            
+            if (isAddressMode) {
+                // Navigate to address
+                const address = normalizeAddress(inputValue);
+                console.log('Navigating to address:', address);
+                
+                // Check if node exists and is addressable
+                const targetNode = manifest.nodes.find(n => n.id === address);
+                
+                if (!targetNode) {
+                    // Node doesn't exist
+                    console.log('Address not found:', address);
+                    inputValue = 'NOT FOUND';
+                    updateInputDisplay();
+                    Timers.setTimeout(withNavGuard(() => {
+                        inputValue = '';
+                        isAddressMode = false;
+                        updateInputDisplay();
+                        updateRtnDelButton();
+                        updateAddressModeOverlay();
+                    }), 1500);
+                    return;
+                }
+                
+                if (targetNode.addressable === false) {
+                    // Node exists but is not available for direct address
+                    console.log('Address not available:', address);
+                    inputValue = 'Not Available';
+                    updateInputDisplay();
+                    Timers.setTimeout(withNavGuard(() => {
+                        inputValue = '';
+                        isAddressMode = false;
+                        updateInputDisplay();
+                        updateRtnDelButton();
+                        updateAddressModeOverlay();
+                    }), 1500);
+                    return;
+                }
+                
+                // Node exists and is addressable - navigate
+                const sourceNode = currentNode;
+                playTransitionThen(() => {
+                    loadNode(address);
+                }, sourceNode);
+                isAddressMode = false;
+                updateAddressModeOverlay();
+            }
+            
+            // Clear input
+            inputValue = '';
+            updateInputDisplay();
+            updateRtnDelButton();
+        }
+
+        function handleStartHome() {
+            if (!manifest) return;
+            
+            // Sound is played on mousedown, not here
+            
+            if (!appStarted) {
+                // Show loading sequence
+                isLoading = true;
+                
+                const loadingScreen = document.getElementById('loadingScreen');
+                const loadingVideo = document.getElementById('loadingVideo');
+                
+                // Prepare loading video first (hidden until ready)
+                loadingVideo.currentTime = 0;
+                loadingVideo.load();
+                
+                // Only show loading screen once video has a frame ready
+                const showLoadingOnce = () => {
+                    loadingScreen.style.display = 'block';
+                    loadingVideo.removeEventListener('playing', showLoadingOnce);
+                };
+                loadingVideo.addEventListener('playing', showLoadingOnce);
+                loadingVideo.play();
+                
+                // Unlock audio immediately on user interaction
+                unlockAudio();
+                
+                // Wait for loading video to end (or 4 seconds minimum)
+                const minLoadTime = 4000;
+                const startTime = Date.now();
+                
+                // Backup in case video doesn't load
+                const startVersion = navVersion;
+                // If the user navigates quickly, cancel this so it doesn't yank them back home.
+                if (startFallbackTimeoutId) Timers.clearTimeout(startFallbackTimeoutId);
+                startFallbackTimeoutId = Timers.setTimeout(withNavGuard(() => {
+                    if (isLoading) {
+                        // Clear start image from both layers
+                        const imageA = document.getElementById('viewportImageA');
+                        const imageB = document.getElementById('viewportImageB');
+                        if (imageA && imageA.src.includes('start.jpg')) imageA.src = '';
+                        if (imageB && imageB.src.includes('start.jpg')) imageB.src = '';
+                        
+                        // Load the node first (sets up image behind loading screen)
+                        loadNode(manifest.terrain.startNode);
+                        
+                        // Fade out loading screen over the node image
+                        loadingScreen.style.transition = 'opacity 0.5s ease-out';
+                        loadingScreen.style.opacity = '0';
+                        
+                        // After fade completes, hide loading screen and clean up
+                        setTimeout(() => {
+                            loadingScreen.style.display = 'none';
+                            loadingScreen.style.transition = '';
+                            loadingScreen.style.opacity = '';
+                            isLoading = false;
+                            renderStartHomeButton('home');
+                            startHomeBtn.classList.remove('highlighted');
+                            startHomeBtn.classList.remove('awaiting-start');
+                        }, 520);
+                    }
+                }, startVersion), 4000);
+                
+            } else {
+                // Go home - reload start node
+                // IMPORTANT: Save reference to current node before transition
+                const sourceNode = currentNode;
+                playTransitionThen(() => {
+                    loadNode(manifest.terrain.startNode);
+                }, sourceNode);
+            }
+        }
+
+        // ===========================================
+        // EVENT LISTENERS
+        // ===========================================
+        // Ensure Start/Home button shows icon immediately on load
+        renderStartHomeButton('start');
+        renderIndexButton();
+        renderStaticIcons();
+
+        // Keep pause icon synced with actual audio state changes
+        if (primaryAudio) {
+            primaryAudio.addEventListener('play', () => updatePauseIcon(false));
+            primaryAudio.addEventListener('pause', () => updatePauseIcon(false));
+            primaryAudio.addEventListener('ended', () => updatePauseIcon(false));
+            primaryAudio.addEventListener('emptied', () => updatePauseIcon(true));
+        }
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') pauseForBackground();
+            else attemptResumeFromBackground();
+        });
+
+        window.addEventListener('pagehide', pauseForBackground);
+        window.addEventListener('pageshow', () => {
+            attemptResumeFromBackground();
+        });
+
+        window.addEventListener('blur', pauseForBackground);
+        window.addEventListener('focus', attemptResumeFromBackground);
+
+        resumeBtn?.addEventListener('click', async () => {
+            unlockAudio();
+            try {
+                if (primaryAudio.src) await primaryAudio.play();
+                if (aux1Audio.src) await aux1Audio.play();
+                startProgressUpdates();
+                needsUserResumeTap = false;
+                hideResumeOverlay();
+            } catch (e) {
+                console.log('Resume still blocked:', e);
+            }
+        });
+
+        // Keypad - mousedown for immediate sound, mouseup to stop loop and execute
+        document.querySelectorAll('.key').forEach(btn => {
+            btn.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                playKeySound(btn.dataset.key);
+            });
+            btn.addEventListener('mouseup', () => {
+                stopKeySound();
+                handleKey(btn.dataset.key);
+            });
+            btn.addEventListener('mouseleave', () => {
+                stopKeySound();
+            });
+            // Touch support
+            btn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                playKeySound(btn.dataset.key);
+            });
+            btn.addEventListener('touchend', () => {
+                stopKeySound();
+                handleKey(btn.dataset.key);
+            });
+        });
+
+        // Start/Home button
+        startHomeBtn.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            playKeySound('start');
+        });
+        startHomeBtn.addEventListener('mouseup', () => {
+            stopKeySound();
+            handleStartHome();
+        });
+        startHomeBtn.addEventListener('mouseleave', () => {
+            stopKeySound();
+        });
+
+        // Keyboard input - keydown plays sound, keyup executes
+        let activeKeys = new Set();
+        
+        document.addEventListener('keydown', (e) => {
+            // Don't capture keys when typing in input fields
+            if (e.target.tagName === 'INPUT' || 
+                e.target.tagName === 'TEXTAREA' || 
+                e.target.isContentEditable) {
+                return;
+            }
+            
+            if (e.repeat) return; // Ignore key repeat
+            const key = e.key;
+            let mappedKey = null;
+            
+            if (key >= '0' && key <= '9') {
+                mappedKey = key;
+            } else if (key === '@' || key === '.') {
+                mappedKey = key;
+            } else if (key === '*') {
+                mappedKey = '*';
+            } else if (key === '#') {
+                mappedKey = '#';
+            } else if (key === 'Backspace') {
+                e.preventDefault();
+                mappedKey = 'DEL';
+            } else if (key === 'Enter') {
+                mappedKey = 'enter';
+            } else if (key === ' ') {
+                e.preventDefault();
+                mappedKey = 'pause';
+            } else if (key === 'ArrowLeft') {
+                mappedKey = 'prev';
+            } else if (key === 'ArrowRight') {
+                mappedKey = 'next';
+            }
+            
+            if (mappedKey && !activeKeys.has(key)) {
+                activeKeys.add(key);
+                playKeySound(mappedKey);
+            }
+        });
+        
+        document.addEventListener('keyup', (e) => {
+            // Don't capture keys when typing in input fields
+            if (e.target.tagName === 'INPUT' || 
+                e.target.tagName === 'TEXTAREA' || 
+                e.target.isContentEditable) {
+                return;
+            }
+            
+            const key = e.key;
+            activeKeys.delete(key);
+            stopKeySound();
+            
+            let mappedKey = null;
+            
+            if (key >= '0' && key <= '9') {
+                mappedKey = key;
+            } else if (key === '@' || key === '.') {
+                mappedKey = key;
+            } else if (key === '*') {
+                mappedKey = '*';
+            } else if (key === '#') {
+                mappedKey = '#';
+            } else if (key === 'Backspace') {
+                mappedKey = 'DEL';
+            } else if (key === 'Enter') {
+                handleEnter();
+                return;
+            } else if (key === ' ') {
+                mappedKey = 'pause';
+            } else if (key === 'ArrowLeft') {
+                mappedKey = 'prev';
+            } else if (key === 'ArrowRight') {
+                mappedKey = 'next';
+            }
+            
+            if (mappedKey) {
+                handleKey(mappedKey);
+            }
+        });
+
+        // ===========================================
+        // NAVIGATOR UI
+        // ===========================================
+        function openNavigator() {
+            const overlay = document.getElementById('navigatorOverlay');
+            overlay.classList.add('active');
+            
+            // Update counts
+            document.getElementById('sessionCount').textContent = 
+                `${navigatorState.sessionJourney.length} nodes`;
+            document.getElementById('indexCount').textContent = 
+                `${Object.keys(navigatorState.persistentIndex).length} nodes`;
+            
+            // Render content
+            renderSessionJourney();
+            renderPersistentIndex();
+            updateTagFilter();
+        }
+
+        function closeNavigator() {
+            const overlay = document.getElementById('navigatorOverlay');
+            overlay.classList.remove('active');
+        }
+
+        function toggleSection(sectionId) {
+            const content = document.getElementById(sectionId + 'Content');
+            content.classList.toggle('expanded');
+        }
+
+        function renderSessionJourney() {
+            const list = document.getElementById('breadcrumbList');
+            list.innerHTML = '';
+            
+            if (navigatorState.sessionJourney.length === 0) {
+                list.innerHTML = '<div class="empty-state">No journey yet - start exploring!</div>';
+                return;
+            }
+            
+            navigatorState.sessionJourney.forEach((item, index) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'breadcrumb-item';
+                itemDiv.textContent = `${item.nodeId} - ${item.title}`;
+                list.appendChild(itemDiv);
+                
+                if (index < navigatorState.sessionJourney.length - 1) {
+                    const arrow = document.createElement('div');
+                    arrow.className = 'breadcrumb-arrow';
+                    arrow.textContent = '→';
+                    list.appendChild(arrow);
+                }
+            });
+        }
+
+        function renderPersistentIndex() {
+            const list = document.getElementById('indexList');
+            const sortBy = document.getElementById('sortSelect').value;
+            const tagFilter = document.getElementById('tagFilter').value;
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            // Convert to array and filter
+            let items = Object.entries(navigatorState.persistentIndex)
+                .map(([nodeId, data]) => ({ nodeId, ...data }));
+            
+            // Filter by tag
+            if (tagFilter) {
+                items = items.filter(item => item.tags.includes(tagFilter));
+            }
+            
+            // Filter by search
+            if (searchTerm) {
+                items = items.filter(item => 
+                    item.title.toLowerCase().includes(searchTerm) ||
+                    item.nodeId.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            // Sort
+            items.sort((a, b) => {
+                switch(sortBy) {
+                    case 'title':
+                        return a.title.localeCompare(b.title);
+                    case 'nodeId':
+                        return a.nodeId.localeCompare(b.nodeId);
+                    case 'dateAdded':
+                        return b.firstVisited - a.firstVisited; // Newest first
+                    case 'visitCount':
+                        return b.visitCount - a.visitCount; // Most visited first
+                    default:
+                        return 0;
+                }
+            });
+            
+            // Render
+            list.innerHTML = '';
+            
+            if (items.length === 0) {
+                list.innerHTML = '<div class="empty-state">No nodes match your filters</div>';
+                return;
+            }
+            
+            items.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'index-item';
+                
+                const dateStr = new Date(item.firstVisited).toLocaleDateString();
+                
+                itemDiv.innerHTML = `
+                    <div class="index-item-header">
+                        <div class="index-item-info">
+                            <div class="index-item-id">${item.nodeId}</div>
+                            <div class="index-item-title">${item.title}</div>
+                            <div class="index-item-meta">
+                                <span>Visits: ${item.visitCount}</span>
+                                <span>Added: ${dateStr}</span>
+                                <span>Type: ${item.type}</span>
+                            </div>
+                            ${item.tags.length > 0 ? `
+                                <div class="index-item-tags">
+                                    ${item.tags.map(tag => `<span class="tag-badge">${tag}</span>`).join('')}
+                                </div>
+                            ` : ''}
+                        </div>
+                        <div class="index-item-actions">
+                            <button class="action-btn go" onclick="navigateToNode('${item.nodeId}')" aria-label="Go to node">
+                                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                    <path d="M8 5v14l11-7z"/>
+                                </svg>
+                            </button>
+                            <button class="action-btn delete" onclick="deleteIndexNode('${item.nodeId}')" aria-label="Delete from index">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <textarea class="note-input" 
+                              placeholder="Add a personal note..." 
+                              onblur="updateNodeNote('${item.nodeId}', this.value)"
+                    >${item.userNote}</textarea>
+                `;
+                
+                list.appendChild(itemDiv);
+            });
+        }
+
+        function updateTagFilter() {
+            const select = document.getElementById('tagFilter');
+            const allTags = new Set();
+            
+            Object.values(navigatorState.persistentIndex).forEach(node => {
+                node.tags.forEach(tag => allTags.add(tag));
+            });
+            
+            select.innerHTML = '<option value="">All Tags</option>';
+            [...allTags].sort().forEach(tag => {
+                const option = document.createElement('option');
+                option.value = tag;
+                option.textContent = tag;
+                select.appendChild(option);
+            });
+        }
+
+        function navigateToNode(nodeId) {
+            closeNavigator();
+            
+            // Enter address mode and fill in the node ID
+            isAddressMode = true;
+            inputValue = '@' + nodeId;
+            updateInputDisplay();
+            updateRtnDelButton();
+            updateAddressModeOverlay();
+            
+            // Auto-execute navigation after a brief delay
+            Timers.setTimeout(withNavGuard(() => {
+                handleEnter();
+            }), 100);
+        }
+
+        function deleteIndexNode(nodeId) {
+            if (confirm(`Delete ${nodeId} from your index?`)) {
+                deleteFromIndex(nodeId);
+                renderPersistentIndex();
+                document.getElementById('indexCount').textContent = 
+                    `${Object.keys(navigatorState.persistentIndex).length} nodes`;
+            }
+        }
+
+        // INDEX button handler
+        document.getElementById('indexBtn').addEventListener('click', openNavigator);
+        
+        // ESC key to close overlay
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const overlay = document.getElementById('navigatorOverlay');
+                if (overlay.classList.contains('active')) {
+                    closeNavigator();
+                }
+            }
+        });
+
+        // ===========================================
+        // DEBUG HUD (toggle with backtick)
+        // ===========================================
+        let debugHudEnabled = false;
+        let debugHudIntervalId = null;
+
+        function updateDebugHud() {
+            if (!debugHudEnabled) return;
+            const el = document.getElementById('debugHud');
+            if (!el) return;
+
+            const pa = primaryAudio;
+            const nodeId = currentNode?.id ?? '(none)';
+
+            el.textContent =
+`node: ${nodeId}
+navVersion: ${navVersion}
+visibility: ${document.visibilityState}
+timers: ${Timers.timeouts.size} timeouts, ${Timers.intervals.size} intervals
+primary: paused=${pa.paused} readyState=${pa.readyState} networkState=${pa.networkState}
+time: ${isFinite(pa.currentTime) ? pa.currentTime.toFixed(2) : 'NaN'} / ${isFinite(pa.duration) ? pa.duration.toFixed(2) : 'NaN'}
+src: ${pa.src ? pa.src.split('/').slice(-2).join('/') : '(empty)'}`;
+        }
+
+        function startDebugHudLoop() {
+            if (debugHudIntervalId) return;
+            debugHudIntervalId = window.setInterval(updateDebugHud, 250);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === '`') {
+                debugHudEnabled = !debugHudEnabled;
+                const el = document.getElementById('debugHud');
+                if (el) el.style.display = debugHudEnabled ? 'block' : 'none';
+            }
+        });
+
+        // ===========================================
+        // INIT
+        // ===========================================
+        // Make sure initial images exist
+        const imageA = document.getElementById('viewportImageA');
+        const imageB = document.getElementById('viewportImageB');
+        if (imageA && imageB) {
+            imageA.style.display = 'block';
+            imageB.style.display = 'block';
+        }
+        
+        // Performance monitoring help
+        console.log('%c📊 Terrain Performance Monitor Active', 'color: #4CAF50; font-weight: bold; font-size: 14px');
+        console.log('%cCommands available in console:', 'color: #888');
+        console.log('  PerfMonitor.summary()  - Show performance summary');
+        console.log('  PerfMonitor.history    - View raw timing data');
+        console.log('  PerfMonitor.clear()    - Clear history');
+        console.log('  PerfMonitor.enabled = false  - Disable monitoring');
+        
+        startDebugHudLoop();
+        loadManifest();
+        updateInputDisplay();
+        updateRtnDelButton();
+        updateAddressModeOverlay();
+        updatePauseIcon();
+    </script>
+</body>
+</html>

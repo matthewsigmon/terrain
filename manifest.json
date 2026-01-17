@@ -1,0 +1,1026 @@
+{
+  "terrain": {
+    "id": "further-element",
+    "title": "A Further Element",
+    "version": "1.0",
+    "startNode": "0000.0"
+  },
+  "nodes": [
+    {
+      "id": "0000.0",
+      "title": "Home - Start Here",
+      "type": "connection",
+      "audio": {
+        "primary": "assets/audio/nodes/0000.0.mp3",
+        "aux1": "assets/audio/background/home-background-audio.mp3",
+        "aux1Crossfade": 4000
+      },
+      "transition": {
+        "type": "bundle",
+        "files": [
+          "assets/audio/transitions/bundle-001/1-F2.mp3",
+          "assets/audio/transitions/bundle-001/2-G2.mp3",
+          "assets/audio/transitions/bundle-001/3-A2.mp3",
+          "assets/audio/transitions/bundle-001/4-B2.mp3",
+          "assets/audio/transitions/bundle-001/5-C3.mp3",
+          "assets/audio/transitions/bundle-001/6-D3.mp3",
+          "assets/audio/transitions/bundle-001/7-E3.mp3",
+          "assets/audio/transitions/bundle-001/8-F3.mp3"
+        ],
+        "mode": "random_tracked",
+        "timing": -3000
+      },
+      "visuals": [
+        {
+          "type": "image",
+          "src": "assets/images/nodes/0000.0.jpg",
+          "start": 0,
+          "duration": 0
+        }
+      ],
+      "choices": [
+        {
+          "key": "1",
+          "label": "First time visitor",
+          "target": "0001.0"
+        }
+      ],
+      "interruptible": [],
+      "links": [
+        {
+          "text": "Who is responsible for this nonsense?",
+          "url": "https://matthewsigmon.com"
+        }
+      ],
+      "tags": [],
+      "autoNext": ""
+    },
+    {
+      "id": "0000.1",
+      "title": "On-Hold Stream",
+      "type": "destination",
+      "audio": {
+        "primary": "assets/audio/hold/on-hold.mp3",
+        "bundleMode": "random_tracked"
+      },
+      "transition": {
+        "type": "bundle",
+        "timing": 0,
+        "files": [
+          "assets/audio/transitions/bundle-001/1-F2.mp3",
+          "assets/audio/transitions/bundle-001/2-G2.mp3",
+          "assets/audio/transitions/bundle-001/3-A2.mp3",
+          "assets/audio/transitions/bundle-001/4-B2.mp3",
+          "assets/audio/transitions/bundle-001/5-C3.mp3",
+          "assets/audio/transitions/bundle-001/6-D3.mp3",
+          "assets/audio/transitions/bundle-001/7-E3.mp3",
+          "assets/audio/transitions/bundle-001/8-F3.mp3"
+        ],
+        "mode": "random_tracked"
+      },
+      "visuals": [
+        {
+          "type": "image",
+          "src": "assets/images/hold/0000.1.jpg",
+          "start": 0,
+          "duration": 0
+        }
+      ],
+      "choices": [
+        {
+          "key": "1",
+          "label": "More info about me",
+          "target": "1000.0"
+        },
+        {
+          "key": "2",
+          "label": "Further Element info",
+          "target": "0001.0"
+        }
+      ],
+      "interruptible": [],
+      "links": [
+        {
+          "text": "matthewsigmon.com",
+          "url": "https://matthewsigmon.com"
+        }
+      ],
+      "tags": []
+    },
+    {
+      "id": "0001.0",
+      "title": "First-Time Visitor",
+      "type": "connection",
+      "audio": {
+        "primary": "assets/audio/nodes/0001.0-v2.mp3"
+      },
+      "transition": {
+        "type": "bundle",
+        "timing": -1000,
+        "volume": 0,
+        "files": [
+          "assets/audio/transitions/bundle-001/1-F2.mp3",
+          "assets/audio/transitions/bundle-001/2-G2.mp3",
+          "assets/audio/transitions/bundle-001/3-A2.mp3",
+          "assets/audio/transitions/bundle-001/4-B2.mp3",
+          "assets/audio/transitions/bundle-001/5-C3.mp3",
+          "assets/audio/transitions/bundle-001/6-D3.mp3",
+          "assets/audio/transitions/bundle-001/7-E3.mp3",
+          "assets/audio/transitions/bundle-001/8-F3.mp3"
+        ],
+        "mode": "random_tracked"
+      },
+      "visuals": [
+        {
+          "type": "image",
+          "src": "assets/images/nodes/0001.0.jpg",
+          "start": 0,
+          "duration": 0
+        }
+      ],
+      "choices": [
+        {
+          "key": "1",
+          "label": "Further Element purpose and background",
+          "target": "0001.1"
+        },
+        {
+          "key": "2",
+          "label": "About the name FE",
+          "target": "0001.2"
+        },
+        {
+          "key": "3",
+          "label": "Album - One Opens Up",
+          "target": "2000.0"
+        }
+      ],
+      "interruptible": [],
+      "links": [],
+      "tags": [],
+      "autoNext": ""
+    },
+    {
+      "id": "1000.0",
+      "title": "Matthew Sigmon - The Terrible Truth",
+      "type": "destination",
+      "audio": {
+        "primary": "assets/audio/nodes/1000.0-me-main.mp3"
+      },
+      "transition": {
+        "audio": "assets/audio/transitions/transition-002.mp3",
+        "volume": -5,
+        "timing": -1000
+      },
+      "visuals": [
+        {
+          "type": "image",
+          "src": "assets/images/nodes/1000.0.jpg",
+          "start": 0,
+          "duration": 0
+        },
+        {
+          "type": "image",
+          "src": "assets/images/nodes/1000.0-INT-01.jpg",
+          "start": 67000,
+          "duration": 0
+        }
+      ],
+      "choices": [],
+      "interruptible": [
+        {
+          "time": 67000,
+          "label": "More about Farm Life",
+          "target": "1000.1",
+          "key": "3"
+        }
+      ],
+      "links": [],
+      "tags": [],
+      "autoNext": "0000.1",
+      "returnTransition": "assets/audio/transitions/trans-RET-001.mp3"
+    },
+    {
+      "id": "0001.1",
+      "title": "Further Element 101 - What This Is All About",
+      "type": "destination",
+      "audio": {
+        "primary": "assets/audio/nodes/0001.1.mp3"
+      },
+      "transition": {
+        "audio": "assets/audio/transitions/transition-002.mp3",
+        "volume": -5
+      },
+      "visuals": [
+        {
+          "type": "image",
+          "src": "assets/images/nodes/0001.1.jpg",
+          "start": 0,
+          "duration": 0
+        }
+      ],
+      "choices": [],
+      "interruptible": [],
+      "links": [],
+      "tags": [],
+      "autoNext": "0000.1"
+    },
+    {
+      "id": "0001.2",
+      "title": "What's with the funky name?",
+      "type": "destination",
+      "audio": {
+        "primary": "assets/audio/nodes/0001.2.mp3"
+      },
+      "transition": {
+        "audio": "assets/audio/transitions/transition-002.mp3",
+        "volume": -5
+      },
+      "visuals": [
+        {
+          "type": "image",
+          "src": "assets/images/nodes/0001.2.jpg",
+          "start": 0,
+          "duration": 0
+        }
+      ],
+      "choices": [],
+      "interruptible": [],
+      "links": [],
+      "tags": [],
+      "autoNext": "0000.1",
+      "images": [
+        {
+          "src": "assets/images/nodes/0001.2.jpg",
+          "caption": ""
+        },
+        {
+          "src": "assets/images/nodes/0001.2-detail-1.jpg",
+          "caption": ""
+        },
+        {
+          "src": "assets/images/nodes/0001.2-detail-2.jpg",
+          "caption": ""
+        }
+      ]
+    },
+    {
+      "id": "1000.1",
+      "title": "Growing Up In the 40s in the 1970s - Farm Life",
+      "type": "connection",
+      "audio": {
+        "primary": "assets/audio/nodes/1000.1-farm.mp3"
+      },
+      "transition": {},
+      "visuals": [
+        {
+          "type": "image",
+          "src": "assets/images/nodes/1000.1.jpg",
+          "start": 0,
+          "duration": 0
+        }
+      ],
+      "choices": [],
+      "interruptible": [],
+      "links": [],
+      "tags": [],
+      "returnTransition": "",
+      "indexable": false,
+      "addressable": false
+    },
+    {
+      "id": "2000.20",
+      "title": "One Opens Up playlist",
+      "type": "destination",
+      "audio": {
+        "type": "playlist",
+        "source": "assets/audio/playlists/one-opens-up/one-opens-up.m3u"
+      },
+      "transition": {
+        "audio": "assets/audio/transitions/transition-001.mp3"
+      },
+      "visuals": [
+        {
+          "type": "image",
+          "src": "assets/images/nodes/2000.20.jpg",
+          "start": 0,
+          "duration": 0
+        }
+      ],
+      "choices": [
+        {
+          "key": "1",
+          "label": "Go back",
+          "target": "0001.0"
+        }
+      ],
+      "interruptible": [],
+      "links": [],
+      "tags": []
+    },
+    {
+      "id": "2000.0",
+      "title": "One Opens Up - Track by Track",
+      "type": "destination",
+      "audio": {
+        "primary": "assets/audio/nodes/2000.0.mp3"
+      },
+      "transition": {
+        "type": "bundle",
+        "timing": 0,
+        "volume": 0,
+        "files": [
+          "assets/audio/transitions/bundle-001/1-F2.mp3",
+          "assets/audio/transitions/bundle-001/2-G2.mp3",
+          "assets/audio/transitions/bundle-001/3-A2.mp3",
+          "assets/audio/transitions/bundle-001/4-B2.mp3",
+          "assets/audio/transitions/bundle-001/5-C3.mp3",
+          "assets/audio/transitions/bundle-001/6-D3.mp3",
+          "assets/audio/transitions/bundle-001/7-E3.mp3",
+          "assets/audio/transitions/bundle-001/8-F3.mp3"
+        ],
+        "mode": "random_tracked"
+      },
+      "visuals": [
+        {
+          "type": "image",
+          "src": "assets/images/nodes/one-opens-up/2000.0-one-opens-up.jpg",
+          "start": 0,
+          "duration": 0
+        }
+      ],
+      "choices": [
+        {
+          "key": "1",
+          "label": "Track 1 - Leaving Day",
+          "target": "2000.1"
+        },
+        {
+          "key": "2",
+          "label": "Track - Underway",
+          "target": "2000.2"
+        },
+        {
+          "key": "3",
+          "label": "Track - Where Do You Go",
+          "target": "2000.3"
+        },
+        {
+          "key": "4",
+          "label": "Track - Angels In White",
+          "target": "2000.4"
+        },
+        {
+          "key": "5",
+          "label": "Track - Feels Like A Finger",
+          "target": "2000.5"
+        },
+        {
+          "key": "6",
+          "label": "Track - Fascination",
+          "target": "2000.6"
+        },
+        {
+          "key": "7",
+          "label": "Track - With You",
+          "target": "2000.7"
+        },
+        {
+          "key": "8",
+          "label": "Track - Millennium Man",
+          "target": "2000.8"
+        },
+        {
+          "key": "9",
+          "label": "Track - Not Tomorrow Yet",
+          "target": "2000.9"
+        },
+        {
+          "key": "10",
+          "label": "Track - Possibility",
+          "target": "2000.10"
+        },
+        {
+          "key": "11",
+          "label": "Track - Sunny Shiny Moon",
+          "target": "2000.11"
+        },
+        {
+          "key": "12",
+          "label": "Track - My Real Address",
+          "target": "2000.12"
+        },
+        {
+          "key": "13",
+          "label": "Track - Between the I's",
+          "target": "2000.13"
+        },
+        {
+          "key": "14",
+          "label": "One Opens Up - Full Album Playlist",
+          "target": "2000.20"
+        }
+      ],
+      "interruptible": [],
+      "links": [],
+      "tags": []
+    },
+    {
+      "id": "2000.1",
+      "title": "01. Leaving Day",
+      "type": "destination",
+      "audio": {
+        "primary": "assets/audio/playlists/one-opens-up/01-Leaving-Day.mp3",
+        "primaryTiming": 2000
+      },
+      "transition": {
+        "type": "bundle",
+        "timing": 0,
+        "volume": 0,
+        "files": [
+          "assets/audio/transitions/bundle-001/1-F2.mp3",
+          "assets/audio/transitions/bundle-001/2-G2.mp3",
+          "assets/audio/transitions/bundle-001/3-A2.mp3",
+          "assets/audio/transitions/bundle-001/4-B2.mp3",
+          "assets/audio/transitions/bundle-001/5-C3.mp3",
+          "assets/audio/transitions/bundle-001/6-D3.mp3",
+          "assets/audio/transitions/bundle-001/7-E3.mp3",
+          "assets/audio/transitions/bundle-001/8-F3.mp3"
+        ],
+        "mode": "random_tracked"
+      },
+      "visuals": [
+        {
+          "type": "image",
+          "src": "assets/images/nodes/one-opens-up/2000.1-leaving-day.jpg",
+          "start": 0,
+          "duration": 0
+        }
+      ],
+      "choices": [
+        {
+          "key": "1",
+          "label": "One Opens Up - Album - Home",
+          "target": "2000.0"
+        }
+      ],
+      "interruptible": [],
+      "links": [],
+      "tags": []
+    },
+    {
+      "id": "2000.2",
+      "title": "02. Underway",
+      "type": "destination",
+      "audio": {
+        "primary": "assets/audio/playlists/one-opens-up/02-Underway.mp3",
+        "primaryTiming": 2000
+      },
+      "transition": {
+        "type": "bundle",
+        "timing": 0,
+        "volume": 0,
+        "files": [
+          "assets/audio/transitions/bundle-001/1-F2.mp3",
+          "assets/audio/transitions/bundle-001/2-G2.mp3",
+          "assets/audio/transitions/bundle-001/3-A2.mp3",
+          "assets/audio/transitions/bundle-001/4-B2.mp3",
+          "assets/audio/transitions/bundle-001/5-C3.mp3",
+          "assets/audio/transitions/bundle-001/6-D3.mp3",
+          "assets/audio/transitions/bundle-001/7-E3.mp3",
+          "assets/audio/transitions/bundle-001/8-F3.mp3"
+        ],
+        "mode": "random_tracked"
+      },
+      "visuals": [
+        {
+          "type": "image",
+          "src": "assets/images/nodes/one-opens-up/2000.1-leaving-day.jpg",
+          "start": 0,
+          "duration": 0
+        }
+      ],
+      "choices": [
+        {
+          "key": "1",
+          "label": "One Opens Up - Album - Home",
+          "target": "2000.0"
+        }
+      ],
+      "interruptible": [],
+      "links": [],
+      "tags": []
+    },
+    {
+      "id": "2000.3",
+      "title": "03. Where Do You Go",
+      "type": "destination",
+      "audio": {
+        "primary": "assets/audio/playlists/one-opens-up/03-Where-Do-You-Go.mp3",
+        "primaryTiming": 2000
+      },
+      "transition": {
+        "type": "bundle",
+        "timing": 0,
+        "volume": 0,
+        "files": [
+          "assets/audio/transitions/bundle-001/1-F2.mp3",
+          "assets/audio/transitions/bundle-001/2-G2.mp3",
+          "assets/audio/transitions/bundle-001/3-A2.mp3",
+          "assets/audio/transitions/bundle-001/4-B2.mp3",
+          "assets/audio/transitions/bundle-001/5-C3.mp3",
+          "assets/audio/transitions/bundle-001/6-D3.mp3",
+          "assets/audio/transitions/bundle-001/7-E3.mp3",
+          "assets/audio/transitions/bundle-001/8-F3.mp3"
+        ],
+        "mode": "random_tracked"
+      },
+      "visuals": [
+        {
+          "type": "image",
+          "src": "assets/images/nodes/one-opens-up/2000.1-leaving-day.jpg",
+          "start": 0,
+          "duration": 0
+        }
+      ],
+      "choices": [
+        {
+          "key": "1",
+          "label": "One Opens Up - Album - Home",
+          "target": "2000.0"
+        }
+      ],
+      "interruptible": [],
+      "links": [],
+      "tags": []
+    },
+    {
+      "id": "2000.4",
+      "title": "04. Angels In White",
+      "type": "destination",
+      "audio": {
+        "primary": "assets/audio/playlists/one-opens-up/04-Angels-In-White.mp3",
+        "primaryTiming": 2000
+      },
+      "transition": {
+        "type": "bundle",
+        "timing": 0,
+        "volume": 0,
+        "files": [
+          "assets/audio/transitions/bundle-001/1-F2.mp3",
+          "assets/audio/transitions/bundle-001/2-G2.mp3",
+          "assets/audio/transitions/bundle-001/3-A2.mp3",
+          "assets/audio/transitions/bundle-001/4-B2.mp3",
+          "assets/audio/transitions/bundle-001/5-C3.mp3",
+          "assets/audio/transitions/bundle-001/6-D3.mp3",
+          "assets/audio/transitions/bundle-001/7-E3.mp3",
+          "assets/audio/transitions/bundle-001/8-F3.mp3"
+        ],
+        "mode": "random_tracked"
+      },
+      "visuals": [
+        {
+          "type": "image",
+          "src": "assets/images/nodes/one-opens-up/2000.1-leaving-day.jpg",
+          "start": 0,
+          "duration": 0
+        }
+      ],
+      "choices": [
+        {
+          "key": "1",
+          "label": "One Opens Up - Album - Home",
+          "target": "2000.0"
+        }
+      ],
+      "interruptible": [],
+      "links": [],
+      "tags": []
+    },
+    {
+      "id": "2000.5",
+      "title": "05. Feels Like A Finger",
+      "type": "destination",
+      "audio": {
+        "primary": "assets/audio/playlists/one-opens-up/05-Feels-Like-A-Finger.mp3",
+        "primaryTiming": 2000
+      },
+      "transition": {
+        "type": "bundle",
+        "timing": 0,
+        "volume": 0,
+        "files": [
+          "assets/audio/transitions/bundle-001/1-F2.mp3",
+          "assets/audio/transitions/bundle-001/2-G2.mp3",
+          "assets/audio/transitions/bundle-001/3-A2.mp3",
+          "assets/audio/transitions/bundle-001/4-B2.mp3",
+          "assets/audio/transitions/bundle-001/5-C3.mp3",
+          "assets/audio/transitions/bundle-001/6-D3.mp3",
+          "assets/audio/transitions/bundle-001/7-E3.mp3",
+          "assets/audio/transitions/bundle-001/8-F3.mp3"
+        ],
+        "mode": "random_tracked"
+      },
+      "visuals": [
+        {
+          "type": "image",
+          "src": "assets/images/nodes/one-opens-up/2000.1-leaving-day.jpg",
+          "start": 0,
+          "duration": 0
+        }
+      ],
+      "choices": [
+        {
+          "key": "1",
+          "label": "One Opens Up - Album - Home",
+          "target": "2000.0"
+        }
+      ],
+      "interruptible": [],
+      "links": [],
+      "tags": []
+    },
+    {
+      "id": "2000.6",
+      "title": "06. Fascination",
+      "type": "destination",
+      "audio": {
+        "primary": "assets/audio/playlists/one-opens-up/06-Fascination.mp3",
+        "primaryTiming": 2000
+      },
+      "transition": {
+        "type": "bundle",
+        "timing": 0,
+        "volume": 0,
+        "files": [
+          "assets/audio/transitions/bundle-001/1-F2.mp3",
+          "assets/audio/transitions/bundle-001/2-G2.mp3",
+          "assets/audio/transitions/bundle-001/3-A2.mp3",
+          "assets/audio/transitions/bundle-001/4-B2.mp3",
+          "assets/audio/transitions/bundle-001/5-C3.mp3",
+          "assets/audio/transitions/bundle-001/6-D3.mp3",
+          "assets/audio/transitions/bundle-001/7-E3.mp3",
+          "assets/audio/transitions/bundle-001/8-F3.mp3"
+        ],
+        "mode": "random_tracked"
+      },
+      "visuals": [
+        {
+          "type": "image",
+          "src": "assets/images/nodes/one-opens-up/2000.1-leaving-day.jpg",
+          "start": 0,
+          "duration": 0
+        }
+      ],
+      "choices": [
+        {
+          "key": "1",
+          "label": "One Opens Up - Album - Home",
+          "target": "2000.0"
+        }
+      ],
+      "interruptible": [],
+      "links": [],
+      "tags": []
+    },
+    {
+      "id": "2000.7",
+      "title": "07. With You",
+      "type": "destination",
+      "audio": {
+        "primary": "assets/audio/playlists/one-opens-up/07-With-You.mp3",
+        "primaryTiming": 2000
+      },
+      "transition": {
+        "type": "bundle",
+        "timing": 0,
+        "volume": 0,
+        "files": [
+          "assets/audio/transitions/bundle-001/1-F2.mp3",
+          "assets/audio/transitions/bundle-001/2-G2.mp3",
+          "assets/audio/transitions/bundle-001/3-A2.mp3",
+          "assets/audio/transitions/bundle-001/4-B2.mp3",
+          "assets/audio/transitions/bundle-001/5-C3.mp3",
+          "assets/audio/transitions/bundle-001/6-D3.mp3",
+          "assets/audio/transitions/bundle-001/7-E3.mp3",
+          "assets/audio/transitions/bundle-001/8-F3.mp3"
+        ],
+        "mode": "random_tracked"
+      },
+      "visuals": [
+        {
+          "type": "image",
+          "src": "assets/images/nodes/one-opens-up/2000.1-leaving-day.jpg",
+          "start": 0,
+          "duration": 0
+        }
+      ],
+      "choices": [
+        {
+          "key": "1",
+          "label": "One Opens Up - Album - Home",
+          "target": "2000.0"
+        }
+      ],
+      "interruptible": [],
+      "links": [],
+      "tags": []
+    },
+    {
+      "id": "2000.8",
+      "title": "08. Millennium Man",
+      "type": "destination",
+      "audio": {
+        "primary": "assets/audio/playlists/one-opens-up/08-Millennium-Man.mp3",
+        "primaryTiming": 2000
+      },
+      "transition": {
+        "type": "bundle",
+        "timing": 0,
+        "volume": 0,
+        "files": [
+          "assets/audio/transitions/bundle-001/1-F2.mp3",
+          "assets/audio/transitions/bundle-001/2-G2.mp3",
+          "assets/audio/transitions/bundle-001/3-A2.mp3",
+          "assets/audio/transitions/bundle-001/4-B2.mp3",
+          "assets/audio/transitions/bundle-001/5-C3.mp3",
+          "assets/audio/transitions/bundle-001/6-D3.mp3",
+          "assets/audio/transitions/bundle-001/7-E3.mp3",
+          "assets/audio/transitions/bundle-001/8-F3.mp3"
+        ],
+        "mode": "random_tracked"
+      },
+      "visuals": [
+        {
+          "type": "image",
+          "src": "assets/images/nodes/one-opens-up/2000.1-leaving-day.jpg",
+          "start": 0,
+          "duration": 0
+        }
+      ],
+      "choices": [
+        {
+          "key": "1",
+          "label": "One Opens Up - Album - Home",
+          "target": "2000.0"
+        }
+      ],
+      "interruptible": [],
+      "links": [],
+      "tags": []
+    },
+    {
+      "id": "2000.9",
+      "title": "09. Not Tomorrow Yet",
+      "type": "destination",
+      "audio": {
+        "primary": "assets/audio/playlists/one-opens-up/09-Not-Tomorrow-Yet.mp3",
+        "primaryTiming": 2000
+      },
+      "transition": {
+        "type": "bundle",
+        "timing": 0,
+        "volume": 0,
+        "files": [
+          "assets/audio/transitions/bundle-001/1-F2.mp3",
+          "assets/audio/transitions/bundle-001/2-G2.mp3",
+          "assets/audio/transitions/bundle-001/3-A2.mp3",
+          "assets/audio/transitions/bundle-001/4-B2.mp3",
+          "assets/audio/transitions/bundle-001/5-C3.mp3",
+          "assets/audio/transitions/bundle-001/6-D3.mp3",
+          "assets/audio/transitions/bundle-001/7-E3.mp3",
+          "assets/audio/transitions/bundle-001/8-F3.mp3"
+        ],
+        "mode": "random_tracked"
+      },
+      "visuals": [
+        {
+          "type": "image",
+          "src": "assets/images/nodes/one-opens-up/2000.1-leaving-day.jpg",
+          "start": 0,
+          "duration": 0
+        }
+      ],
+      "choices": [
+        {
+          "key": "1",
+          "label": "One Opens Up - Album - Home",
+          "target": "2000.0"
+        }
+      ],
+      "interruptible": [],
+      "links": [],
+      "tags": []
+    },
+    {
+      "id": "2000.10",
+      "title": "10. Possibility ",
+      "type": "destination",
+      "audio": {
+        "primary": "assets/audio/playlists/one-opens-up/10-Possibility.mp3",
+        "primaryTiming": 2000
+      },
+      "transition": {
+        "type": "bundle",
+        "timing": 0,
+        "volume": 0,
+        "files": [
+          "assets/audio/transitions/bundle-001/1-F2.mp3",
+          "assets/audio/transitions/bundle-001/2-G2.mp3",
+          "assets/audio/transitions/bundle-001/3-A2.mp3",
+          "assets/audio/transitions/bundle-001/4-B2.mp3",
+          "assets/audio/transitions/bundle-001/5-C3.mp3",
+          "assets/audio/transitions/bundle-001/6-D3.mp3",
+          "assets/audio/transitions/bundle-001/7-E3.mp3",
+          "assets/audio/transitions/bundle-001/8-F3.mp3"
+        ],
+        "mode": "random_tracked"
+      },
+      "visuals": [
+        {
+          "type": "image",
+          "src": "assets/images/nodes/one-opens-up/2000.1-leaving-day.jpg",
+          "start": 0,
+          "duration": 0
+        }
+      ],
+      "choices": [
+        {
+          "key": "1",
+          "label": "One Opens Up - Album - Home",
+          "target": "2000.0"
+        }
+      ],
+      "interruptible": [],
+      "links": [],
+      "tags": []
+    },
+    {
+      "id": "2000.11",
+      "title": "11. Sunny Shiny Moon",
+      "type": "destination",
+      "audio": {
+        "primary": "assets/audio/playlists/one-opens-up/11-Sunny-Shiny-Moon.mp3",
+        "primaryTiming": 2000
+      },
+      "transition": {
+        "type": "bundle",
+        "timing": 0,
+        "volume": 0,
+        "files": [
+          "assets/audio/transitions/bundle-001/1-F2.mp3",
+          "assets/audio/transitions/bundle-001/2-G2.mp3",
+          "assets/audio/transitions/bundle-001/3-A2.mp3",
+          "assets/audio/transitions/bundle-001/4-B2.mp3",
+          "assets/audio/transitions/bundle-001/5-C3.mp3",
+          "assets/audio/transitions/bundle-001/6-D3.mp3",
+          "assets/audio/transitions/bundle-001/7-E3.mp3",
+          "assets/audio/transitions/bundle-001/8-F3.mp3"
+        ],
+        "mode": "random_tracked"
+      },
+      "visuals": [
+        {
+          "type": "image",
+          "src": "assets/images/nodes/one-opens-up/2000.1-leaving-day.jpg",
+          "start": 0,
+          "duration": 0
+        }
+      ],
+      "choices": [
+        {
+          "key": "1",
+          "label": "One Opens Up - Album - Home",
+          "target": "2000.0"
+        }
+      ],
+      "interruptible": [],
+      "links": [],
+      "tags": []
+    },
+    {
+      "id": "2000.12",
+      "title": "12. My Real Address",
+      "type": "destination",
+      "audio": {
+        "primary": "assets/audio/playlists/one-opens-up/12-My-Real-Addess.mp3",
+        "primaryTiming": 2000
+      },
+      "transition": {
+        "type": "bundle",
+        "timing": 0,
+        "volume": 0,
+        "files": [
+          "assets/audio/transitions/bundle-001/1-F2.mp3",
+          "assets/audio/transitions/bundle-001/2-G2.mp3",
+          "assets/audio/transitions/bundle-001/3-A2.mp3",
+          "assets/audio/transitions/bundle-001/4-B2.mp3",
+          "assets/audio/transitions/bundle-001/5-C3.mp3",
+          "assets/audio/transitions/bundle-001/6-D3.mp3",
+          "assets/audio/transitions/bundle-001/7-E3.mp3",
+          "assets/audio/transitions/bundle-001/8-F3.mp3"
+        ],
+        "mode": "random_tracked"
+      },
+      "visuals": [
+        {
+          "type": "image",
+          "src": "assets/images/nodes/one-opens-up/2000.1-leaving-day.jpg",
+          "start": 0,
+          "duration": 0
+        }
+      ],
+      "choices": [
+        {
+          "key": "1",
+          "label": "One Opens Up - Album - Home",
+          "target": "2000.0"
+        }
+      ],
+      "interruptible": [],
+      "links": [],
+      "tags": []
+    },
+    {
+      "id": "2000.13",
+      "title": "13. Between the I's",
+      "type": "destination",
+      "audio": {
+        "primary": "assets/audio/playlists/one-opens-up/13-Between-the-I's.mp3",
+        "primaryTiming": 2000
+      },
+      "transition": {
+        "type": "bundle",
+        "timing": 0,
+        "volume": 0,
+        "files": [
+          "assets/audio/transitions/bundle-001/1-F2.mp3",
+          "assets/audio/transitions/bundle-001/2-G2.mp3",
+          "assets/audio/transitions/bundle-001/3-A2.mp3",
+          "assets/audio/transitions/bundle-001/4-B2.mp3",
+          "assets/audio/transitions/bundle-001/5-C3.mp3",
+          "assets/audio/transitions/bundle-001/6-D3.mp3",
+          "assets/audio/transitions/bundle-001/7-E3.mp3",
+          "assets/audio/transitions/bundle-001/8-F3.mp3"
+        ],
+        "mode": "random_tracked"
+      },
+      "visuals": [
+        {
+          "type": "image",
+          "src": "assets/images/nodes/one-opens-up/2000.1-leaving-day.jpg",
+          "start": 0,
+          "duration": 0
+        }
+      ],
+      "choices": [
+        {
+          "key": "1",
+          "label": "One Opens Up - Album - Home",
+          "target": "2000.0"
+        }
+      ],
+      "interruptible": [],
+      "links": [],
+      "tags": []
+    },
+    {
+      "id": "1000.2",
+      "title": "Video Node Test",
+      "type": "destination",
+      "audio": {},
+      "transition": {
+        "type": "bundle",
+        "timing": 0,
+        "volume": 0,
+        "files": [
+          "assets/audio/transitions/bundle-001/1-F2.mp3",
+          "assets/audio/transitions/bundle-001/2-G2.mp3",
+          "assets/audio/transitions/bundle-001/3-A2.mp3",
+          "assets/audio/transitions/bundle-001/4-B2.mp3",
+          "assets/audio/transitions/bundle-001/5-C3.mp3",
+          "assets/audio/transitions/bundle-001/6-D3.mp3",
+          "assets/audio/transitions/bundle-001/7-E3.mp3",
+          "assets/audio/transitions/bundle-001/8-F3.mp3"
+        ],
+        "mode": "random_tracked"
+      },
+      "visuals": [],
+      "choices": [
+        {
+          "key": "2",
+          "label": "0001.1",
+          "target": "0001.1"
+        }
+      ],
+      "interruptible": [],
+      "links": [],
+      "tags": [],
+      "video": {
+        "src": "assets/video/nodes/1000.2.mp4",
+        "poster": "assets/video/nodes/1000.2-1.jpg",
+        "endPoster": "assets/video/nodes/1000.2-2.jpg"
+      }
+    }
+  ]
+}
