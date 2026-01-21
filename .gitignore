@@ -1,0 +1,7 @@
+# Mac system files
+.DS_Store
+
+# Large media files (hosted on Cloudflare R2)
+assets/audio/
+assets/video/
+assets/loading.mp4

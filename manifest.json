@@ -12,7 +12,7 @@
       "type": "connection",
       "audio": {
         "primary": "assets/audio/nodes/0000.0.mp3",
-        "aux1": "assets/audio/background/home-background-audio.mp3",
+        "aux1": "assets/audio/aux/aux-0000.mp3",
         "aux1Crossfade": 4000,
         "aux1FadeIn": 3000
       },
@@ -62,7 +62,7 @@
       "type": "connection",
       "audio": {
         "bundleMode": "random_tracked",
-        "aux1": "assets/audio/hold/on-hold.mp3",
+        "aux1": "assets/audio/aux/aux-0001.mp3",
         "aux1Crossfade": 5000
       },
       "transition": {
@@ -83,7 +83,7 @@
       "visuals": [
         {
           "type": "image",
-          "src": "assets/images/hold/0000.1.jpg",
+          "src": "assets/images/nodes/0000.1.jpg",
           "start": 0,
           "duration": 0
         }
@@ -143,12 +143,12 @@
       "choices": [
         {
           "key": "1",
-          "label": "Further Element purpose and background",
+          "label": "What is Terrain & what is it for?",
           "target": "0001.1"
         },
         {
           "key": "2",
-          "label": "About the name FE",
+          "label": "Artwork display example",
           "target": "0001.2"
         },
         {
@@ -1043,9 +1043,9 @@
       "links": [],
       "tags": [],
       "video": {
-        "src": "assets/video/nodes/1000.2.mp4",
-        "poster": "assets/video/nodes/1000.2-1.jpg",
-        "endPoster": "assets/video/nodes/1000.2-2.jpg"
+        "src": "assets/video/1000/1000.2.mp4",
+        "poster": "assets/video/1000/1000.2-1.jpg",
+        "endPoster": "assets/video/1000/1000.2-2.jpg"
       },
       "autoNext": "0000.1",
       "preload": true
