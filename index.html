@@ -3123,7 +3123,7 @@
         }
 
         function fadeInAux(audioElement, targetVolume, duration) {
-            audioElement.volume = 0.01; // Start slightly above 0 for mobile compatibility
+            audioElement.volume = 0;
             audioElement.play().then(() => {
                 // Force the target volume after play succeeds (helps with mobile)
                 const startTime = Date.now();
