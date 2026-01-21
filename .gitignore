@@ -1,6 +1,9 @@
 # Mac system files
 .DS_Store
 
+# Editor/IDE files
+.cursor/
+
 # Large media files (hosted on Cloudflare R2)
 assets/audio/
 assets/video/
