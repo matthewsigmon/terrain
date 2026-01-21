@@ -13,7 +13,8 @@
       "audio": {
         "primary": "assets/audio/nodes/0000.0.mp3",
         "aux1": "assets/audio/background/home-background-audio.mp3",
-        "aux1Crossfade": 4000
+        "aux1Crossfade": 4000,
+        "aux1FadeIn": 3000
       },
       "transition": {
         "type": "bundle",
@@ -57,11 +58,12 @@
     },
     {
       "id": "0000.1",
-      "title": "On-Hold Stream",
-      "type": "destination",
+      "title": "Auto-Next: A Connection Node",
+      "type": "connection",
       "audio": {
-        "primary": "assets/audio/hold/on-hold.mp3",
-        "bundleMode": "random_tracked"
+        "bundleMode": "random_tracked",
+        "aux1": "assets/audio/hold/on-hold.mp3",
+        "aux1Crossfade": 5000
       },
       "transition": {
         "type": "bundle",
@@ -94,7 +96,7 @@
         },
         {
           "key": "2",
-          "label": "Further Element info",
+          "label": "More about Terrain",
           "target": "0001.0"
         }
       ],
@@ -162,7 +164,7 @@
     },
     {
       "id": "1000.0",
-      "title": "Matthew Sigmon - The Terrible Truth",
+      "title": "About me - or better still, you!",
       "type": "destination",
       "audio": {
         "primary": "assets/audio/nodes/1000.0-me-main.mp3"
@@ -202,7 +204,7 @@
     },
     {
       "id": "0001.1",
-      "title": "Further Element 101 - What This Is All About",
+      "title": "Welcome to Terrain",
       "type": "destination",
       "audio": {
         "primary": "assets/audio/nodes/0001.1.mp3"
@@ -227,8 +229,8 @@
     },
     {
       "id": "0001.2",
-      "title": "What's with the funky name?",
-      "type": "destination",
+      "title": "Art Portfolio Example",
+      "type": "connection",
       "audio": {
         "primary": "assets/audio/nodes/0001.2.mp3"
       },
@@ -244,11 +246,22 @@
           "duration": 0
         }
       ],
-      "choices": [],
+      "choices": [
+        {
+          "key": "1",
+          "label": "Video Playback Example",
+          "target": "1000.2"
+        },
+        {
+          "key": "2",
+          "label": "More about Terrain",
+          "target": "0001.0"
+        }
+      ],
       "interruptible": [],
       "links": [],
       "tags": [],
-      "autoNext": "0000.1",
+      "autoNext": "",
       "images": [
         {
           "src": "assets/images/nodes/0001.2.jpg",
@@ -266,7 +279,7 @@
     },
     {
       "id": "1000.1",
-      "title": "Growing Up In the 40s in the 1970s - Farm Life",
+      "title": "An 'Interruptible' Choice",
       "type": "connection",
       "audio": {
         "primary": "assets/audio/nodes/1000.1-farm.mp3"
@@ -316,7 +329,8 @@
       ],
       "interruptible": [],
       "links": [],
-      "tags": []
+      "tags": [],
+      "preload": false
     },
     {
       "id": "2000.0",
@@ -495,7 +509,7 @@
       "visuals": [
         {
           "type": "image",
-          "src": "assets/images/nodes/one-opens-up/2000.1-leaving-day.jpg",
+          "src": "assets/images/nodes/one-opens-up/2000.2.jpg",
           "start": 0,
           "duration": 0
         }
@@ -509,7 +523,8 @@
       ],
       "interruptible": [],
       "links": [],
-      "tags": []
+      "tags": [],
+      "preload": true
     },
     {
       "id": "2000.3",
@@ -538,7 +553,7 @@
       "visuals": [
         {
           "type": "image",
-          "src": "assets/images/nodes/one-opens-up/2000.1-leaving-day.jpg",
+          "src": "assets/images/nodes/one-opens-up/2000.3.jpg",
           "start": 0,
           "duration": 0
         }
@@ -552,7 +567,8 @@
       ],
       "interruptible": [],
       "links": [],
-      "tags": []
+      "tags": [],
+      "preload": true
     },
     {
       "id": "2000.4",
@@ -581,7 +597,7 @@
       "visuals": [
         {
           "type": "image",
-          "src": "assets/images/nodes/one-opens-up/2000.1-leaving-day.jpg",
+          "src": "assets/images/nodes/one-opens-up/2000.4.jpg",
           "start": 0,
           "duration": 0
         }
@@ -595,7 +611,8 @@
       ],
       "interruptible": [],
       "links": [],
-      "tags": []
+      "tags": [],
+      "preload": true
     },
     {
       "id": "2000.5",
@@ -624,7 +641,7 @@
       "visuals": [
         {
           "type": "image",
-          "src": "assets/images/nodes/one-opens-up/2000.1-leaving-day.jpg",
+          "src": "assets/images/nodes/one-opens-up/2000.5.jpg",
           "start": 0,
           "duration": 0
         }
@@ -638,7 +655,8 @@
       ],
       "interruptible": [],
       "links": [],
-      "tags": []
+      "tags": [],
+      "preload": true
     },
     {
       "id": "2000.6",
@@ -667,7 +685,7 @@
       "visuals": [
         {
           "type": "image",
-          "src": "assets/images/nodes/one-opens-up/2000.1-leaving-day.jpg",
+          "src": "assets/images/nodes/one-opens-up/2000.6.jpg",
           "start": 0,
           "duration": 0
         }
@@ -681,7 +699,8 @@
       ],
       "interruptible": [],
       "links": [],
-      "tags": []
+      "tags": [],
+      "preload": true
     },
     {
       "id": "2000.7",
@@ -710,7 +729,7 @@
       "visuals": [
         {
           "type": "image",
-          "src": "assets/images/nodes/one-opens-up/2000.1-leaving-day.jpg",
+          "src": "assets/images/nodes/one-opens-up/2000.7.jpg",
           "start": 0,
           "duration": 0
         }
@@ -724,7 +743,8 @@
       ],
       "interruptible": [],
       "links": [],
-      "tags": []
+      "tags": [],
+      "preload": true
     },
     {
       "id": "2000.8",
@@ -753,7 +773,7 @@
       "visuals": [
         {
           "type": "image",
-          "src": "assets/images/nodes/one-opens-up/2000.1-leaving-day.jpg",
+          "src": "assets/images/nodes/one-opens-up/2000.8.jpg",
           "start": 0,
           "duration": 0
         }
@@ -767,7 +787,8 @@
       ],
       "interruptible": [],
       "links": [],
-      "tags": []
+      "tags": [],
+      "preload": true
     },
     {
       "id": "2000.9",
@@ -796,7 +817,7 @@
       "visuals": [
         {
           "type": "image",
-          "src": "assets/images/nodes/one-opens-up/2000.1-leaving-day.jpg",
+          "src": "assets/images/nodes/one-opens-up/2000.9.jpg",
           "start": 0,
           "duration": 0
         }
@@ -810,7 +831,8 @@
       ],
       "interruptible": [],
       "links": [],
-      "tags": []
+      "tags": [],
+      "preload": true
     },
     {
       "id": "2000.10",
@@ -839,7 +861,7 @@
       "visuals": [
         {
           "type": "image",
-          "src": "assets/images/nodes/one-opens-up/2000.1-leaving-day.jpg",
+          "src": "assets/images/nodes/one-opens-up/2000.10.jpg",
           "start": 0,
           "duration": 0
         }
@@ -853,7 +875,8 @@
       ],
       "interruptible": [],
       "links": [],
-      "tags": []
+      "tags": [],
+      "preload": true
     },
     {
       "id": "2000.11",
@@ -882,7 +905,7 @@
       "visuals": [
         {
           "type": "image",
-          "src": "assets/images/nodes/one-opens-up/2000.1-leaving-day.jpg",
+          "src": "assets/images/nodes/one-opens-up/2000.11.jpg",
           "start": 0,
           "duration": 0
         }
@@ -896,7 +919,8 @@
       ],
       "interruptible": [],
       "links": [],
-      "tags": []
+      "tags": [],
+      "preload": true
     },
     {
       "id": "2000.12",
@@ -925,7 +949,7 @@
       "visuals": [
         {
           "type": "image",
-          "src": "assets/images/nodes/one-opens-up/2000.1-leaving-day.jpg",
+          "src": "assets/images/nodes/one-opens-up/2000.12.jpg",
           "start": 0,
           "duration": 0
         }
@@ -939,7 +963,8 @@
       ],
       "interruptible": [],
       "links": [],
-      "tags": []
+      "tags": [],
+      "preload": true
     },
     {
       "id": "2000.13",
@@ -968,7 +993,7 @@
       "visuals": [
         {
           "type": "image",
-          "src": "assets/images/nodes/one-opens-up/2000.1-leaving-day.jpg",
+          "src": "assets/images/nodes/one-opens-up/2000.13.jpg",
           "start": 0,
           "duration": 0
         }
@@ -982,7 +1007,8 @@
       ],
       "interruptible": [],
       "links": [],
-      "tags": []
+      "tags": [],
+      "preload": true
     },
     {
       "id": "1000.2",
@@ -1008,7 +1034,7 @@
       "visuals": [],
       "choices": [
         {
-          "key": "2",
+          "key": "1",
           "label": "0001.1",
           "target": "0001.1"
         }
@@ -1020,7 +1046,9 @@
         "src": "assets/video/nodes/1000.2.mp4",
         "poster": "assets/video/nodes/1000.2-1.jpg",
         "endPoster": "assets/video/nodes/1000.2-2.jpg"
-      }
+      },
+      "autoNext": "0000.1",
+      "preload": true
     }
   ]
 }

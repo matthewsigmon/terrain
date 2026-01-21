@@ -48,6 +48,9 @@
 
         html {
             font-size: var(--font-size-base);
+            -webkit-text-size-adjust: 100%;
+            -moz-text-size-adjust: 100%;
+            text-size-adjust: 100%;
         }
 
         body {
@@ -605,76 +608,45 @@
         }
 
         /* ===========================================
-           IMAGE CAROUSEL (multi-image nodes)
+           IMAGE CAROUSEL NAV STRIP (below viewport)
            =========================================== */
-        .carousel-controls {
-            position: absolute;
-            left: 0;
-            right: 0;
-            bottom: 12px;
-            display: none;
-            justify-content: center;
+        .carousel-nav-strip {
+            display: none;  /* shown when active */
             align-items: center;
-            padding: 0 12px;
-            z-index: 20;
-            pointer-events: none; /* allow clicks only on buttons */
+            justify-content: space-between;
+            padding: 4px 0;
+            margin-top: 2px;
         }
 
-        .carousel-controls.active {
+        .carousel-nav-strip.active {
             display: flex;
         }
 
-        .carousel-nav{
-          display:flex;
-          align-items:center;
-          justify-content:center;
-          gap:14px;
-          user-select:none;
-          pointer-events: auto;
+        .carousel-nav-btn {
+            background: transparent;
+            border: none;
+            padding: 8px;
+            color: var(--text-dim);
+            opacity: 0.7;
+            transition: opacity 0.15s ease;
+            cursor: pointer;
         }
 
-        .carousel-btn{
-          background:transparent;
-          border:none;
-          padding:10px;              /* tap target */
-          border-radius:10px;
-          color: var(--text-primary);
-          opacity:0.85;
-          cursor:pointer;
+        .carousel-nav-btn svg {
+            width: 20px;
+            height: 20px;
+            display: block;
         }
 
-        .carousel-btn svg{
-          width:22px;
-          height:22px;
-          display:block;
-        }
+        .carousel-nav-btn:hover { opacity: 1; }
+        .carousel-nav-btn:active { opacity: 0.5; }
 
-        .carousel-btn:hover{ opacity:1; }
-        .carousel-btn:active{ opacity:0.75; transform: translateY(1px); }
-
-        .carousel-dots{
-          display:flex;
-          align-items:center;
-          gap:8px;
-          opacity:0.65;
-        }
-
-        .carousel-dot{
-          width:6px;
-          height:6px;
-          border-radius:999px;
-          background: currentColor;      /* inherits text color */
-          opacity:0.35;
-        }
-
-        .carousel-dot.active{
-          opacity:1;
-        }
-
-        /* Optional: slightly larger dots on mobile */
-        @media (max-width: 768px){
-          .carousel-btn svg{ width:24px; height:24px; }
-          .carousel-dot{ width:7px; height:7px; }
+        .carousel-counter {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            opacity: 0.7;
+            letter-spacing: 0.05em;
+            font-variant-numeric: tabular-nums;
         }
 
         .carousel-caption {
@@ -796,6 +768,16 @@
         .progress-text {
             display: inline-block;
             line-height: 1;
+        }
+        
+        /* Pulsing loading state for buffering heavy media */
+        .progress-text.loading-pulse {
+            animation: loading-pulse 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes loading-pulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
         }
 
         @media (max-width: 768px) {
@@ -1271,7 +1253,7 @@
         /* -----------------------------------------------------
            Navigation arrows / symbols (if text-based for now)
            ----------------------------------------------------- */
-        .carousel-btn,
+        .carousel-nav-btn,
         .nav-symbol,
         .symbol {
           font-weight: 500;
@@ -1530,27 +1512,25 @@
                     <img src="assets/images/ui/address-mode-indicator.png" alt="Address Mode">
                 </div>
 
-                <!-- Carousel UI (multi-image nodes) -->
-                <div id="carouselControls" class="carousel-controls" aria-hidden="true">
-                    <div class="carousel-nav" id="carouselNav">
-                        <button class="carousel-btn" id="carouselPrev" type="button" aria-label="Previous image">
-                            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                                <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                            <span class="sr-only">Previous image</span>
-                        </button>
-
-                        <div class="carousel-dots" id="carouselDots" aria-label="Image position" aria-hidden="true"></div>
-
-                        <button class="carousel-btn" id="carouselNext" type="button" aria-label="Next image">
-                            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                                <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                            <span class="sr-only">Next image</span>
-                        </button>
-                    </div>
-                </div>
+                <!-- Caption overlay (stays on viewport) -->
                 <div id="carouselCaption" class="carousel-caption" aria-hidden="true"></div>
+            </div>
+            
+            <!-- Carousel navigation strip (outside viewport, below it) -->
+            <div id="carouselNavStrip" class="carousel-nav-strip" aria-hidden="true">
+                <button class="carousel-nav-btn" id="carouselPrev" type="button" aria-label="Previous image">
+                    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                
+                <span class="carousel-counter" id="carouselCounter">1/1</span>
+                
+                <button class="carousel-nav-btn" id="carouselNext" type="button" aria-label="Next image">
+                    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
             </div>
         </div>
 
@@ -1817,8 +1797,7 @@
         // Audio elements
         let primaryAudio = new Audio();
         let aux1Audio = new Audio();
-        let aux1CrossfadeAudio = new Audio(); // NEW: For crossfading aux1
-        let aux2Audio = new Audio();
+        let aux1CrossfadeAudio = new Audio(); // For crossfading aux1
         
         // Dual transition audio elements - alternate to avoid tail-chasing
         let transitionAudioA = new Audio();
@@ -1827,10 +1806,256 @@
         
         let keySound = new Audio();
 
+        const isSafari = /Safari/.test(navigator.userAgent) &&
+            !/Chrome|Chromium|Edg|OPR|Brave|CriOS|FxiOS/.test(navigator.userAgent);
+
         let aux1CrossfadeInterval = null; // NEW: Track crossfade timer
 
         let audioBookmark = null; // Stores { nodeId, timestamp } for return navigation
         let activeInterruptibles = []; // Currently available interruptible choices
+
+        // ===========================================
+        // ASSET PRELOADING
+        // ===========================================
+        const preloadCache = {
+            images: new Map(),  // nodeId -> { src: Image element }
+            audio: new Map(),   // nodeId -> { src: Audio element }
+            pending: new Set()  // nodeIds currently being preloaded
+        };
+        
+        // Persistent cache for home node images - never evicted
+        // Note: Audio is NOT persistently cached because Safari has issues
+        // with multiple Audio elements referencing the same URL
+        const persistentCache = {
+            images: new Map()   // nodeId -> { src, element }
+        };
+        
+        const HOME_NODE_ID = '0000.0';  // Always keep this cached
+        const DEFAULT_PRELOAD_MAX_NODES = 5;  // Max nodes to keep in cache
+
+        // Performance tuning overrides (loaded from manifest.perfOverrides)
+        let perfOverrides = {};
+
+        const PERF_DEFAULTS = {
+            safariAuxDelayMs: 1000,
+            safariPreloadMaxNodes: 1,
+            safariPreloadDelayMs: 1500,
+            safariPreloadFallbackMs: 6000
+        };
+
+        function getPerfOverride(key) {
+            if (perfOverrides && Object.prototype.hasOwnProperty.call(perfOverrides, key)) {
+                return perfOverrides[key];
+            }
+            return PERF_DEFAULTS[key];
+        }
+        
+        function preloadImage(src) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.onerror = () => reject(new Error(`Failed to preload: ${src}`));
+                img.src = src;
+            });
+        }
+        
+        function preloadAudio(src) {
+            return new Promise((resolve) => {
+                const audio = new Audio();
+                audio.preload = 'auto';
+                
+                const onReady = () => {
+                    audio.removeEventListener('canplay', onReady);
+                    audio.removeEventListener('error', onError);
+                    resolve(audio);
+                };
+                const onError = () => {
+                    audio.removeEventListener('canplay', onReady);
+                    audio.removeEventListener('error', onError);
+                    resolve(null); // Don't reject, just return null
+                };
+                
+                audio.addEventListener('canplay', onReady);
+                audio.addEventListener('error', onError);
+                audio.src = src;
+                audio.load();
+                
+                // Timeout after 10 seconds
+                setTimeout(() => {
+                    audio.removeEventListener('canplay', onReady);
+                    audio.removeEventListener('error', onError);
+                    resolve(audio); // Return anyway, might be partially loaded
+                }, 10000);
+            });
+        }
+        
+        function getAdjacentNodeIds(node) {
+            const ids = new Set();
+            
+            // Choices
+            if (node.choices) {
+                node.choices.forEach(choice => {
+                    if (choice.target) ids.add(choice.target);
+                });
+            }
+            
+            // AutoNext
+            if (node.autoNext) {
+                ids.add(node.autoNext);
+            }
+            
+            // Interruptibles (preload immediately available ones)
+            if (node.interruptible) {
+                node.interruptible.forEach(int => {
+                    if (int.target) ids.add(int.target);
+                });
+            }
+            
+            return Array.from(ids);
+        }
+        
+        async function preloadNodeAssets(nodeId) {
+            // Skip if already cached or being preloaded
+            if (preloadCache.images.has(nodeId) || preloadCache.pending.has(nodeId)) {
+                return;
+            }
+            
+            const node = manifest?.nodes?.find(n => n.id === nodeId);
+            if (!node) return;
+            
+            // Check for preload opt-out flag
+            if (node.preload === false) {
+                PerfMonitor.mark(`Skipping preload for ${nodeId} (opted out)`);
+                return;
+            }
+            
+            preloadCache.pending.add(nodeId);
+            PerfMonitor.start(`preload-${nodeId}`);
+            
+            const promises = [];
+            
+            // Preload first image (carousel or visuals)
+            let imageSrc = null;
+            if (node.images && node.images.length > 0) {
+                imageSrc = typeof node.images[0] === 'string' ? node.images[0] : node.images[0].src;
+            } else if (node.visuals && node.visuals.length > 0 && node.visuals[0].type === 'image') {
+                imageSrc = node.visuals[0].src;
+            } else if (node.video && node.video.poster) {
+                imageSrc = node.video.poster;
+            }
+            
+            if (imageSrc) {
+                promises.push(
+                    preloadImage(imageSrc).then(img => {
+                        preloadCache.images.set(nodeId, { src: imageSrc, element: img });
+                    }).catch(() => {})
+                );
+            }
+            
+            // Audio preloading DISABLED - causes connection competition and hangs
+            // across all browsers. The browser's HTTP cache helps on repeat visits.
+            // Images are the main benefit of preloading anyway.
+            
+            await Promise.all(promises);
+            
+            preloadCache.pending.delete(nodeId);
+            PerfMonitor.end(`preload-${nodeId}`);
+        }
+        
+        function preloadAdjacentNodes(currentNode) {
+            const adjacentIds = getAdjacentNodeIds(currentNode);
+            
+            // Limit how many we preload
+            const maxNodes = isSafari ? getPerfOverride('safariPreloadMaxNodes') : DEFAULT_PRELOAD_MAX_NODES;
+            const toPreload = adjacentIds.slice(0, maxNodes);
+            
+            const preloadDelay = isSafari ? getPerfOverride('safariPreloadDelayMs') : 100;
+            toPreload.forEach(nodeId => {
+                // Use setTimeout to not block current execution
+                setTimeout(() => preloadNodeAssets(nodeId), preloadDelay);
+            });
+            
+            if (toPreload.length > 0) {
+                PerfMonitor.mark(`Preloading ${toPreload.length} adjacent nodes: ${toPreload.join(', ')}`);
+            }
+        }
+        
+        function clearPreloadCache() {
+            // Clear image references (but NOT persistent cache)
+            preloadCache.images.clear();
+            
+            // Clear audio references (and stop any loading)
+            preloadCache.audio.forEach(({ element }) => {
+                if (element) {
+                    element.src = '';
+                }
+            });
+            preloadCache.audio.clear();
+            
+            preloadCache.pending.clear();
+        }
+        
+        function getCachedImage(nodeId, src) {
+            // Check persistent cache first (home node)
+            const persistent = persistentCache.images.get(nodeId);
+            if (persistent && persistent.src === src) {
+                PerfMonitor.mark(`Using persistent cached image for ${nodeId}`);
+                return persistent.element;
+            }
+            
+            // Then check regular preload cache
+            const cached = preloadCache.images.get(nodeId);
+            if (cached && cached.src === src) {
+                PerfMonitor.mark(`Using cached image for ${nodeId}`);
+                return cached.element;
+            }
+            return null;
+        }
+        
+        function getCachedAudio(nodeId, src) {
+            // Check regular preload cache (audio is not persistently cached)
+            const cached = preloadCache.audio.get(nodeId);
+            if (cached && cached.src === src) {
+                PerfMonitor.mark(`Using cached audio for ${nodeId}`);
+                return cached.element;
+            }
+            return null;
+        }
+        
+        // Preload home node IMAGE into persistent cache (never evicted)
+        // Audio is NOT persistently cached - Safari has issues with multiple
+        // Audio elements referencing the same URL
+        async function preloadHomeNode() {
+            const homeNode = manifest?.nodes?.find(n => n.id === HOME_NODE_ID);
+            if (!homeNode) return;
+            
+            // Already cached?
+            if (persistentCache.images.has(HOME_NODE_ID)) {
+                return;
+            }
+            
+            PerfMonitor.start('preload-home-persistent');
+            
+            // Preload home image only
+            let imageSrc = null;
+            if (homeNode.images && homeNode.images.length > 0) {
+                imageSrc = typeof homeNode.images[0] === 'string' ? homeNode.images[0] : homeNode.images[0].src;
+            } else if (homeNode.visuals && homeNode.visuals.length > 0 && homeNode.visuals[0].type === 'image') {
+                imageSrc = homeNode.visuals[0].src;
+            }
+            
+            if (imageSrc) {
+                try {
+                    const img = await preloadImage(imageSrc);
+                    persistentCache.images.set(HOME_NODE_ID, { src: imageSrc, element: img });
+                    PerfMonitor.mark(`Home image cached persistently`);
+                } catch (e) {
+                    // Ignore errors
+                }
+            }
+            
+            PerfMonitor.end('preload-home-persistent');
+        }
 
         // Session navigation history (for RTN-as-Back)
         let sessionHistory = [];
@@ -1881,11 +2106,11 @@
 
         // HEROICONS-style outline SVGs (24x24 viewBox)
         function iconArrowUturnLeft() {
+            // Heroicons arrow-uturn-left (curves up then back)
             return `
                 <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                    <path d="M9 14L4 9l5-5" fill="none" stroke="currentColor" stroke-width="2"
-                          stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M20 20v-7a4 4 0 0 0-4-4H4" fill="none" stroke="currentColor" stroke-width="2"
+                    <path d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 0 1 0 12h-3" 
+                          fill="none" stroke="currentColor" stroke-width="2"
                           stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
             `;
@@ -1903,13 +2128,12 @@
             `;
         }
 
-        function iconCheckCircle() {
+        function iconCheck() {
+            // Heroicons check - larger standalone checkmark
             return `
                 <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                    <path d="M9 12l2 2 4-4" fill="none" stroke="currentColor" stroke-width="2"
-                          stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M12 21a9 9 0 1 0-9-9 9 9 0 0 0 9 9Z"
-                          fill="none" stroke="currentColor" stroke-width="2"
+                    <path d="M4.5 12.75l6 6 9-13.5" 
+                          fill="none" stroke="currentColor" stroke-width="2.5"
                           stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
             `;
@@ -1959,7 +2183,7 @@
         function renderStaticIcons() {
             // GO = check-circle
             const goBtn = getKeyBtn('#');
-            setBtnIcon(goBtn, iconCheckCircle(), 'Go');
+            setBtnIcon(goBtn, iconCheck(), 'Go');
 
             // Transport icons
             setBtnIcon(getKeyBtn('prev'), iconRewind(), 'Restart');
@@ -2050,7 +2274,7 @@
         }
 
         // Audio settings
-        const AUX_FADE_DURATION = 2000; // 2 second fade in
+        const AUX_FADE_DURATION = 2000; // Default 2 second fade in (can be overridden per-node via aux1FadeIn)
         const AUX_MAX_VOLUME = 0.3;
 
         // ===========================================
@@ -2430,29 +2654,33 @@
             return files[selectedIndex];
         }
 
+        // Silent audio data URI for priming
+        const silentDataUri = 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAABhgC7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAAAAYYoRwmHAAAAAAD/+xBkAA/wAABpAAAACAAADSAAAAEAAAGkAAAAIAAANIAAAARMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/7EGQAj/AAAGkAAAAIAAANIAAAAQAAAaQAAAAgAAA0gAAABFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVQ==';
+        
         function unlockAudio() {
             if (audioUnlocked) return;
             
             console.log('Unlocking audio for iOS...');
             
-            // Play and pause each audio element to unlock them
-            const unlockPromises = [
-                primaryAudio.play().then(() => primaryAudio.pause()),
-                aux1Audio.play().then(() => aux1Audio.pause()),
-                aux2Audio.play().then(() => aux2Audio.pause()),
-                transitionAudioA.play().then(() => transitionAudioA.pause()),
-                transitionAudioB.play().then(() => transitionAudioB.pause())
-            ];
+            const silentAudio = new Audio(silentDataUri);
             
-            Promise.all(unlockPromises)
+            silentAudio.play()
                 .then(() => {
                     audioUnlocked = true;
-                    console.log('Audio unlocked');
+                    console.log('Audio unlocked successfully');
                 })
                 .catch(e => {
                     console.log('Audio unlock attempted:', e);
                     audioUnlocked = true; // Mark as attempted anyway
                 });
+        }
+        
+        // Prime audio context during user gesture - helps Safari mobile
+        // remember the gesture through async transitions
+        function primeAudioContext() {
+            const silentAudio = new Audio(silentDataUri);
+            silentAudio.volume = 0;
+            silentAudio.play().catch(() => {});
         }
 
         // Key sound mapping
@@ -2491,11 +2719,10 @@
         const linksArea = document.getElementById('linksArea');
         const resumeBtn = document.getElementById('resumeBtn');
 
-        const carouselControls = document.getElementById('carouselControls');
-        const carouselNav = document.getElementById('carouselNav');
+        const carouselNavStrip = document.getElementById('carouselNavStrip');
         const carouselPrevBtn = document.getElementById('carouselPrev');
         const carouselNextBtn = document.getElementById('carouselNext');
-        const carouselDots = document.getElementById('carouselDots');
+        const carouselCounter = document.getElementById('carouselCounter');
         const carouselCaption = document.getElementById('carouselCaption');
         const viewportVideo = document.getElementById('viewportVideo');
 
@@ -2551,12 +2778,18 @@
             viewportVideo.onended = () => {
                 console.log('Video ended');
                 videoState = 'ended';
-                viewportVideo.style.display = 'none';
                 
                 // Show end poster (or fall back to start poster)
+                // Start crossfade BEFORE hiding video, so end poster appears underneath
                 const endPoster = currentNode.video.endPoster || currentNode.video.poster;
                 if (endPoster) {
-                    crossfadeToImage(endPoster);
+                    crossfadeToImage(endPoster, currentNode.id);
+                    // Hide video after crossfade completes (400ms transition + small buffer)
+                    setTimeout(() => {
+                        viewportVideo.style.display = 'none';
+                    }, 450);
+                } else {
+                    viewportVideo.style.display = 'none';
                 }
                 
                 stopProgressUpdates();
@@ -2584,27 +2817,18 @@
         let carouselImages = [];   // normalized: [{ src, caption }]
         let carouselIndex = 0;
         let carouselEnabled = false;
-        let swipeStartX = null;
-        let swipeStartY = null;
+        let carouselNodeId = null;  // Track current node for cache lookups
 
-        function renderCarouselDots(total, activeIndex){
-            const dotsEl = document.getElementById('carouselDots');
-            const navEl  = document.getElementById('carouselNav');
-            if (!dotsEl || !navEl) return;
-
-            if (!total || total <= 1){
-                navEl.style.display = 'none';
+        function updateCarouselCounter(total, activeIndex) {
+            if (!carouselCounter) return;
+            
+            if (!total || total <= 1) {
+                carouselNavStrip?.classList.remove('active');
                 return;
             }
-
-            navEl.style.display = 'flex';
-            dotsEl.innerHTML = '';
-
-            for (let i = 0; i < total; i++){
-                const dot = document.createElement('div');
-                dot.className = 'carousel-dot' + (i === activeIndex ? ' active' : '');
-                dotsEl.appendChild(dot);
-            }
+            
+            carouselNavStrip?.classList.add('active');
+            carouselCounter.textContent = `${activeIndex + 1}/${total}`;
         }
 
         function normalizeImages(node) {
@@ -2624,11 +2848,10 @@
             carouselEnabled = false;
             carouselImages = [];
             carouselIndex = 0;
-            carouselControls?.classList.remove('active');
-            if (carouselNav) carouselNav.style.display = 'none';
+            carouselNodeId = null;
+            carouselNavStrip?.classList.remove('active');
             carouselCaption?.classList.remove('active');
             if (carouselCaption) carouselCaption.textContent = '';
-            renderCarouselDots(0, 0);
         }
 
         function updateCarouselUI() {
@@ -2637,7 +2860,7 @@
             const idx = Math.min(Math.max(carouselIndex, 0), total - 1);
             carouselIndex = idx;
 
-            renderCarouselDots(total, idx);
+            updateCarouselCounter(total, idx);
 
             const cap = carouselImages[idx]?.caption || '';
             if (carouselCaption) {
@@ -2648,12 +2871,6 @@
                     carouselCaption.textContent = '';
                     carouselCaption.classList.remove('active');
                 }
-            }
-
-            // Only show controls when there's something to navigate
-            if (carouselControls) {
-                if (total > 1) carouselControls.classList.add('active');
-                else carouselControls.classList.remove('active');
             }
         }
 
@@ -2666,10 +2883,10 @@
             carouselImages = imgs;
             carouselIndex = 0;
             carouselEnabled = true;
+            carouselNodeId = node.id;  // Store for cache lookups
             updateCarouselUI();
-            renderCarouselDots(carouselImages.length, carouselIndex);
-            // Display first image now
-            crossfadeToImage(carouselImages[0].src);
+            // Display first image now (with nodeId for cache)
+            crossfadeToImage(carouselImages[0].src, node.id);
             return true;
         }
 
@@ -2678,39 +2895,14 @@
             const total = carouselImages.length;
             carouselIndex = (carouselIndex + delta + total) % total;
             updateCarouselUI();
-            renderCarouselDots(total, carouselIndex);
-            crossfadeToImage(carouselImages[carouselIndex].src);
+            crossfadeToImage(carouselImages[carouselIndex].src, carouselNodeId);
         }
 
         carouselPrevBtn?.addEventListener('click', () => carouselGo(-1));
         carouselNextBtn?.addEventListener('click', () => carouselGo(1));
 
-        // Swipe support (simple horizontal swipe)
-        viewport?.addEventListener('touchstart', (e) => {
-            if (!carouselEnabled || carouselImages.length < 2) return;
-            const t = e.touches?.[0];
-            if (!t) return;
-            swipeStartX = t.clientX;
-            swipeStartY = t.clientY;
-        }, { passive: true });
-
-        viewport?.addEventListener('touchend', (e) => {
-            if (!carouselEnabled || carouselImages.length < 2) return;
-            if (swipeStartX == null || swipeStartY == null) return;
-            const t = e.changedTouches?.[0];
-            if (!t) return;
-            const dx = t.clientX - swipeStartX;
-            const dy = t.clientY - swipeStartY;
-            swipeStartX = null;
-            swipeStartY = null;
-
-            // Ignore mostly-vertical gestures
-            if (Math.abs(dy) > Math.abs(dx)) return;
-            // Threshold
-            if (Math.abs(dx) < 40) return;
-            if (dx < 0) carouselGo(1);
-            else carouselGo(-1);
-        }, { passive: true });
+        // Touch/swipe on images DISABLED - users pinch-to-zoom on mobile
+        // and swipes cause accidental image changes. Use arrow buttons only.
 
         // Keyboard arrows (desktop convenience)
         document.addEventListener('keydown', (e) => {
@@ -2741,6 +2933,18 @@
             
             // Get active media element (video or audio)
             const media = getActiveMediaElement();
+            const hasPrimary = !!(media && media.src && media.src !== '');
+            const hasAux1 = !!(aux1Audio && aux1Audio.src && aux1Audio.src !== '');
+            const hasChoices = !!(currentNode?.choices && currentNode.choices.length > 0);
+            
+            // If no primary audio but has aux1 or choices, show guidance message
+            if (!hasPrimary && (hasAux1 || hasChoices)) {
+                progressBar.style.width = '0%';
+                if (!isAddressMode && inputValue.length === 0) {
+                    progressText.textContent = 'Make a choice when ready';
+                }
+                return;
+            }
             
             // Skip if no source or paused (unless video in ready/ended state)
             if (!media.src || (media.paused && videoState !== 'ended') || isAddressMode || inputValue.length > 0) {
@@ -2788,6 +2992,22 @@
             progressBar.style.width = '0%';
             progressText.textContent = '';
         }
+        
+        // Loading state for buffering heavy media nodes
+        let isBuffering = false;
+        
+        function showBufferingState() {
+            isBuffering = true;
+            progressBar.style.width = '0%';
+            progressText.textContent = 'Loading';
+            progressText.classList.add('loading-pulse');
+        }
+        
+        function hideBufferingState() {
+            isBuffering = false;
+            progressText.classList.remove('loading-pulse');
+            progressText.textContent = '';
+        }
 
         function checkInterruptibles() {
             if (!currentNode || !currentNode.interruptible || !primaryAudio.src) return;
@@ -2815,7 +3035,7 @@
             // Find visual that starts at this timestamp
             const visual = currentNode.visuals.find(v => v.start === timestamp);
             if (visual && visual.type === 'image') {
-                crossfadeToImage(visual.src);
+                crossfadeToImage(visual.src, currentNode.id);
             }
         }
 
@@ -2832,8 +3052,30 @@
             const rect = inputField.getBoundingClientRect();
             const clickX = e.clientX - rect.left;
             const percent = clickX / rect.width;
-            media.currentTime = percent * media.duration;
+            const seekTime = percent * media.duration;
+            media.currentTime = seekTime;
             updateProgressBar();
+            
+            // After seeking, check interruptibles (with small delay for audio to settle)
+            // This catches any choices at timestamps we scrubbed past
+            if (!videoState) {
+                setTimeout(() => {
+                    checkInterruptibles();
+                    // Also update the visual for the most recent interruptible we passed
+                    if (currentNode?.interruptible) {
+                        // Find the latest interruptible we should have passed
+                        const seekTimeMs = seekTime * 1000;
+                        const passedInterruptibles = currentNode.interruptible
+                            .filter(c => c.time <= seekTimeMs)
+                            .sort((a, b) => b.time - a.time); // Sort descending
+                        
+                        if (passedInterruptibles.length > 0) {
+                            const latest = passedInterruptibles[0];
+                            showInterruptibleVisual(latest.time);
+                        }
+                    }
+                }, 50);
+            }
         });
 
         // ===========================================
@@ -2870,10 +3112,6 @@
             aux1Audio.pause();
             aux1Audio.currentTime = 0;
             aux1Audio.src = '';  // ADD THIS
-
-            aux2Audio.pause();
-            aux2Audio.currentTime = 0;
-            aux2Audio.src = '';  // ADD THIS
 
             if (aux1CrossfadeInterval) {
                 Timers.clearInterval(aux1CrossfadeInterval);
@@ -2961,8 +3199,12 @@
                 const response = await fetch('manifest.json');
                 if (!response.ok) throw new Error('Failed to load manifest.json');
                 manifest = await response.json();
-                PerfMonitor.end('manifest-load', `${Object.keys(manifest.nodes || {}).length} nodes`);
+                perfOverrides = manifest.perfOverrides || {};
+                PerfMonitor.end('manifest-load', `${manifest.nodes?.length || 0} nodes`);
                 console.log('Manifest loaded:', manifest.terrain.title);
+                
+                // Preload home node into persistent cache (never evicted)
+                preloadHomeNode();
                 
                 // Load navigator state after manifest is loaded
                 loadNavigatorState();
@@ -3055,7 +3297,7 @@
                 
                 // Show start poster image
                 if (node.video.poster) {
-                    crossfadeToImage(node.video.poster);
+                    crossfadeToImage(node.video.poster, node.id);
                 }
                 
                 // Preload video (muted until user starts it)
@@ -3090,7 +3332,7 @@
                 if (node.visuals && node.visuals.length > 0) {
                     const visual = node.visuals[0];
                     if (visual.type === 'image') {
-                        crossfadeToImage(visual.src);
+                        crossfadeToImage(visual.src, node.id);
                     } else if (visual.type === 'video') {
                         viewport.innerHTML = '';
                         const video = document.createElement('video');
@@ -3139,8 +3381,19 @@
                     const audioLoadHandler = () => {
                         PerfMonitor.end('audio-load-' + node.id);
                         primaryAudio.removeEventListener('canplay', audioLoadHandler);
+                        primaryAudio.removeEventListener('error', audioErrorHandler);
                     };
+                    
+                    // Handle audio load errors
+                    const audioErrorHandler = () => {
+                        PerfMonitor.end('audio-load-' + node.id);
+                        PerfMonitor.warn(`Audio load error for ${node.id}: ${primaryAudio.error?.message || 'unknown'}`);
+                        primaryAudio.removeEventListener('canplay', audioLoadHandler);
+                        primaryAudio.removeEventListener('error', audioErrorHandler);
+                    };
+                    
                     primaryAudio.addEventListener('canplay', audioLoadHandler);
+                    primaryAudio.addEventListener('error', audioErrorHandler);
 
                     const timingDelay = node.audio.primaryTiming || 0;
 
@@ -3174,8 +3427,10 @@
                     aux1Audio.loop = true;
                 }
 
-                const auxDelay = node.audio.aux1Timing || 0;
-                const startAux = withNavGuard(() => fadeInAux(aux1Audio, 1.0, AUX_FADE_DURATION), versionAtEnter);
+                const safariAuxDelay = isSafari && node.audio?.primary ? getPerfOverride('safariAuxDelayMs') : 0;
+                const auxDelay = (node.audio.aux1Timing || 0) + safariAuxDelay;
+                const aux1FadeIn = node.audio.aux1FadeIn !== undefined ? node.audio.aux1FadeIn : AUX_FADE_DURATION;
+                const startAux = withNavGuard(() => fadeInAux(aux1Audio, 1.0, aux1FadeIn), versionAtEnter);
                 if (auxDelay > 0) Timers.setTimeout(startAux, auxDelay);
                 else startAux();
             } else {
@@ -3184,6 +3439,12 @@
                     Timers.clearInterval(aux1CrossfadeInterval);
                     aux1CrossfadeInterval = null;
                 }
+            }
+
+            // For aux1-only nodes (no primary audio), show guidance message directly
+            if (!node.audio?.primary && (node.audio?.aux1 || (node.choices && node.choices.length > 0))) {
+                progressBar.style.width = '0%';
+                progressText.textContent = 'Make a choice when ready';
             }
 
             // DESTINATION autoNext behavior (transition semantics)
@@ -3212,6 +3473,39 @@
                 } else {
                     safeSetOnEnded(primaryAudio, goNext, versionAtEnter);
                 }
+            }
+            
+            // Preload assets for adjacent nodes AFTER current audio is ready
+            // This prevents preloading from stealing bandwidth from current content
+            const nodeIdForPreload = node.id; // Capture for closure
+            let preloadTriggered = false;
+            
+            const triggerPreload = () => {
+                if (preloadTriggered) return; // Guard against double-trigger
+                preloadTriggered = true;
+                preloadAdjacentNodes(node);
+            };
+            
+            if (node.audio?.primary || (node.audio?.type === 'bundle' && node.audio?.files?.length)) {
+                // Wait for current audio to be ready before preloading
+                const preloadOnceReady = () => {
+                    primaryAudio.removeEventListener('canplay', preloadOnceReady);
+                    // Add small delay to let audio streaming stabilize
+                    const delay = isSafari ? getPerfOverride('safariPreloadDelayMs') : 500;
+                    setTimeout(triggerPreload, delay);
+                };
+                primaryAudio.addEventListener('canplay', preloadOnceReady);
+                
+                // Fallback: preload after 5 seconds even if audio hasn't loaded
+                const fallbackDelay = isSafari ? getPerfOverride('safariPreloadFallbackMs') : 5000;
+                setTimeout(() => {
+                    primaryAudio.removeEventListener('canplay', preloadOnceReady);
+                    triggerPreload();
+                }, fallbackDelay);
+            } else {
+                // No audio on this node, preload after short delay
+                const delay = isSafari ? getPerfOverride('safariPreloadDelayMs') : 1000;
+                setTimeout(triggerPreload, delay);
             }
         }
 
@@ -3244,6 +3538,34 @@
 
             currentNode = node;
             console.log('Loading node:', node.id, node.title);
+
+            // Clean up preload cache - remove entries not relevant to new node
+            // Keep: current node, forward choices, and recent history (for backward navigation)
+            const relevantNodes = new Set(getAdjacentNodeIds(node));
+            relevantNodes.add(node.id); // Keep current node if preloaded
+            
+            // Also keep recent session history nodes for backward navigation
+            // Keep last 3 nodes from history to allow stepping back without re-fetching
+            const historyToKeep = sessionHistory.slice(-3);
+            historyToKeep.forEach(nodeId => relevantNodes.add(nodeId));
+            
+            // Remove image cache entries not in relevant set
+            for (const cachedId of preloadCache.images.keys()) {
+                if (!relevantNodes.has(cachedId)) {
+                    preloadCache.images.delete(cachedId);
+                }
+            }
+            
+            // Remove audio cache entries not in relevant set
+            for (const cachedId of preloadCache.audio.keys()) {
+                if (!relevantNodes.has(cachedId)) {
+                    const cached = preloadCache.audio.get(cachedId);
+                    if (cached?.element) {
+                        cached.element.src = ''; // Stop any loading
+                    }
+                    preloadCache.audio.delete(cachedId);
+                }
+            }
 
             PerfMonitor.start('teardownCurrentNode');
             teardownCurrentNode();
@@ -3386,7 +3708,7 @@
             linksArea.appendChild(supportLink);
         }
 
-        function crossfadeToImage(newSrc) {
+        function crossfadeToImage(newSrc, nodeId = null) {
             PerfMonitor.start('crossfade-' + newSrc.split('/').pop());
             const imageA = document.getElementById('viewportImageA');
             const imageB = document.getElementById('viewportImageB');
@@ -3395,11 +3717,8 @@
             const activeImage = imageA.classList.contains('active') ? imageA : imageB;
             const inactiveImage = activeImage === imageA ? imageB : imageA;
             
-            // Preload new image
-            const loadStart = performance.now();
-            const tempImg = new Image();
-            tempImg.onload = () => {
-                const loadTime = Math.round(performance.now() - loadStart);
+            // Function to apply the crossfade once image is ready
+            const applyImage = (loadTime) => {
                 if (loadTime > 100) {
                     PerfMonitor.warn(`Image load took ${loadTime}ms: ${newSrc.split('/').pop()}`);
                 }
@@ -3428,10 +3747,26 @@
                     PerfMonitor.end('crossfade-' + newSrc.split('/').pop());
                 }, 420); // Slightly longer than 400ms transition
             };
-            tempImg.onerror = () => {
-                PerfMonitor.warn(`Image failed to load: ${newSrc}`);
-            };
-            tempImg.src = newSrc;
+            
+            // Check cache first if nodeId provided
+            const cachedImg = nodeId ? getCachedImage(nodeId, newSrc) : null;
+            
+            if (cachedImg) {
+                // Use cached image - instant!
+                applyImage(0);
+            } else {
+                // Load fresh
+                const loadStart = performance.now();
+                const tempImg = new Image();
+                tempImg.onload = () => {
+                    const loadTime = Math.round(performance.now() - loadStart);
+                    applyImage(loadTime);
+                };
+                tempImg.onerror = () => {
+                    PerfMonitor.warn(`Image failed to load: ${newSrc}`);
+                };
+                tempImg.src = newSrc;
+            }
         }
 
         // ===========================================
@@ -3523,7 +3858,7 @@
         function renderStaticIcons() {
             // GO = check-circle
             const goBtn = getKeyBtn('#');
-            setBtnIcon(goBtn, iconCheckCircle(), 'Go');
+            setBtnIcon(goBtn, iconCheck(), 'Go');
 
             // Transport icons
             setBtnIcon(getKeyBtn('prev'), iconRewind(), 'Restart');
@@ -3537,19 +3872,29 @@
             const btn = getKeyBtn('pause');
             if (!btn) return;
 
-            // Get active media element
+            // Get active media element (primary audio or video)
             const media = getActiveMediaElement();
+            const hasPrimary = !!(media && media.src && media.src !== '');
+            const hasAux1 = !!(aux1Audio && aux1Audio.src && aux1Audio.src !== '');
             
             // User preference: on init (nothing loaded yet), show PAUSE (not PLAY)
-            const hasMediaLoaded = !!(media && media.src && media.src !== '');
-            if (forceDefaultPause || !hasMediaLoaded) {
+            if (forceDefaultPause || (!hasPrimary && !hasAux1)) {
                 setBtnIcon(btn, iconPause(), 'Pause');
                 return;
             }
 
+            // Determine pause state based on what's playing
+            let isPaused;
+            if (hasPrimary) {
+                isPaused = media.paused;
+            } else if (hasAux1) {
+                isPaused = aux1Audio.paused;
+            } else {
+                isPaused = true;
+            }
+            
             // If media exists: show PLAY when paused, PAUSE when playing
-            const showPlay = !!media.paused;
-            setBtnIcon(btn, showPlay ? iconPlay() : iconPause(), showPlay ? 'Play' : 'Pause');
+            setBtnIcon(btn, isPaused ? iconPlay() : iconPause(), isPaused ? 'Play' : 'Pause');
         }
 
         function executeChoice(key) {
@@ -3560,6 +3905,10 @@
                 console.log('Choice ignored during video playback');
                 return false;
             }
+            
+            // Prime audio for Safari mobile - play a silent audio during
+            // the user gesture to keep the audio context warm through transitions
+            primeAudioContext();
             
             // First check regular choices
             if (currentNode.choices) {
@@ -3616,11 +3965,8 @@
             }
             
             if (key === 'DEL') {
-                // Video replay: DEL restarts video during playback/paused/ended
-                if (isVideoActive() || videoState === 'ended') {
-                    restartVideo();
-                    return;
-                }
+                // Note: Video restart is handled by 'prev' key (<<), not DEL/RTN
+                // This allows RTN to step back in history even during video playback
                 
                 if (isAddressMode || inputValue !== '') {
                     // In address mode or has input: DELETE function
@@ -3710,13 +4056,22 @@
                 } else {
                     // Restart main audio (doesn't affect background)
                     console.log('Prev pressed. primaryAudio.src:', primaryAudio.src, 'currentNode:', currentNode?.id);
-                    if (primaryAudio.src && primaryAudio.src !== '') {
+                    
+                    // Check if audio is in error state or needs reload
+                    const needsReload = !primaryAudio.src || 
+                                        primaryAudio.src === '' || 
+                                        primaryAudio.error ||
+                                        primaryAudio.networkState === 3; // NETWORK_NO_SOURCE
+                    
+                    if (needsReload && currentNode?.audio?.primary) {
+                        // Audio element is in bad state, reload it
+                        console.log('Audio needs reload, reloading from node');
+                        primaryAudio.src = currentNode.audio.primary;
+                        primaryAudio.load();
                         primaryAudio.currentTime = 0;
                         primaryAudio.play().catch(e => console.log('Audio play failed:', e));
                         startProgressUpdates();
-                    } else if (currentNode && currentNode.audio && currentNode.audio.primary) {
-                        // Audio source was cleared, reload it
-                        primaryAudio.src = currentNode.audio.primary;
+                    } else if (primaryAudio.src && primaryAudio.src !== '') {
                         primaryAudio.currentTime = 0;
                         primaryAudio.play().catch(e => console.log('Audio play failed:', e));
                         startProgressUpdates();
@@ -3737,14 +4092,27 @@
                     }
                 } else {
                     // Toggle audio pause
-                    if (primaryAudio.paused) {
-                        primaryAudio.play();
-                        if (aux1Audio.src) aux1Audio.play();
-                        startProgressUpdates();
-                    } else {
-                        primaryAudio.pause();
-                        aux1Audio.pause();
-                        stopProgressUpdates();
+                    const hasPrimary = primaryAudio.src && primaryAudio.src !== '';
+                    const hasAux1 = aux1Audio.src && aux1Audio.src !== '';
+                    
+                    if (hasPrimary) {
+                        // Primary audio exists - toggle it (and aux1 follows)
+                        if (primaryAudio.paused) {
+                            primaryAudio.play();
+                            if (hasAux1) aux1Audio.play();
+                            startProgressUpdates();
+                        } else {
+                            primaryAudio.pause();
+                            aux1Audio.pause();
+                            stopProgressUpdates();
+                        }
+                    } else if (hasAux1) {
+                        // Aux1 only - toggle just aux1
+                        if (aux1Audio.paused) {
+                            aux1Audio.play().catch(e => console.log('Aux1 resume failed:', e));
+                        } else {
+                            aux1Audio.pause();
+                        }
                     }
                 }
                 updatePauseIcon();
@@ -3917,12 +4285,19 @@
                 loadingVideo.load();
                 
                 // Only show loading screen once video has a frame ready
+                let loadingScreenShown = false;
                 const showLoadingOnce = () => {
+                    if (!isLoading) return; // Guard: don't show if we've moved on
+                    if (loadingScreenShown) return;
+                    loadingScreenShown = true;
                     loadingScreen.style.display = 'block';
                     loadingVideo.removeEventListener('playing', showLoadingOnce);
                 };
                 loadingVideo.addEventListener('playing', showLoadingOnce);
-                loadingVideo.play();
+                loadingVideo.play().catch(() => {
+                    // If video fails to play, show loading screen anyway (black bg)
+                    showLoadingOnce();
+                });
                 
                 // Unlock audio immediately on user interaction
                 unlockAudio();
@@ -3937,6 +4312,9 @@
                 if (startFallbackTimeoutId) Timers.clearTimeout(startFallbackTimeoutId);
                 startFallbackTimeoutId = Timers.setTimeout(withNavGuard(() => {
                     if (isLoading) {
+                        // Clean up video listener to prevent late firing
+                        loadingVideo.removeEventListener('playing', showLoadingOnce);
+                        
                         // Clear start image from both layers
                         const imageA = document.getElementById('viewportImageA');
                         const imageB = document.getElementById('viewportImageB');
@@ -3955,6 +4333,9 @@
                             loadingScreen.style.display = 'none';
                             loadingScreen.style.transition = '';
                             loadingScreen.style.opacity = '';
+                            // Stop loading video (prevents audio from continuing)
+                            loadingVideo.pause();
+                            loadingVideo.currentTime = 0;
                             isLoading = false;
                             renderStartHomeButton('home');
                             startHomeBtn.classList.remove('highlighted');
