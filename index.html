@@ -2681,6 +2681,10 @@
             const silentAudio = new Audio(silentDataUri);
             silentAudio.volume = 0;
             silentAudio.play().catch(() => {});
+            
+            // Touch aux audio volume during user gesture to unlock volume control on mobile
+            aux1Audio.volume = 1;
+            aux1CrossfadeAudio.volume = 1;
         }
 
         // Key sound mapping
@@ -3123,7 +3127,7 @@
         }
 
         function fadeInAux(audioElement, targetVolume, duration) {
-            audioElement.volume = 0.1; // Start slightly above 0 for mobile compatibility
+            audioElement.volume = 0;
             audioElement.play().then(() => {
                 // Force the target volume after play succeeds (helps with mobile)
                 const startTime = Date.now();
