@@ -1787,6 +1787,7 @@
         // STATE
         // ===========================================
         let manifest = null;
+        let mediaBase = ''; // Base URL for audio/video assets (set from manifest.terrain.mediaBase)
         let currentNode = null;
         let inputValue = '';
         let appStarted = false;
@@ -1813,6 +1814,22 @@
 
         let audioBookmark = null; // Stores { nodeId, timestamp } for return navigation
         let activeInterruptibles = []; // Currently available interruptible choices
+
+        // ===========================================
+        // MEDIA URL RESOLUTION
+        // ===========================================
+        // Prepends mediaBase to relative paths (audio/video hosted on R2)
+        // For local dev: set mediaBase to '' in manifest.json
+        // For production: set mediaBase to 'https://media.terrainapp.org'
+        function resolveMediaUrl(path) {
+            if (!path) return path;
+            // If already absolute URL, return as-is
+            if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('data:')) {
+                return path;
+            }
+            // Prepend mediaBase for relative paths
+            return mediaBase ? `${mediaBase}/${path}` : path;
+        }
 
         // ===========================================
         // ASSET PRELOADING
@@ -1941,7 +1958,8 @@
             } else if (node.visuals && node.visuals.length > 0 && node.visuals[0].type === 'image') {
                 imageSrc = node.visuals[0].src;
             } else if (node.video && node.video.poster) {
-                imageSrc = node.video.poster;
+                // Video posters are on R2, need to resolve the URL
+                imageSrc = resolveMediaUrl(node.video.poster);
             }
             
             if (imageSrc) {
@@ -2681,10 +2699,6 @@
             const silentAudio = new Audio(silentDataUri);
             silentAudio.volume = 0;
             silentAudio.play().catch(() => {});
-            
-            // Touch aux audio volume during user gesture to unlock volume control on mobile
-            aux1Audio.volume = 1;
-            aux1CrossfadeAudio.volume = 1;
         }
 
         // Key sound mapping
@@ -2787,7 +2801,7 @@
                 // Start crossfade BEFORE hiding video, so end poster appears underneath
                 const endPoster = currentNode.video.endPoster || currentNode.video.poster;
                 if (endPoster) {
-                    crossfadeToImage(endPoster, currentNode.id);
+                    crossfadeToImage(resolveMediaUrl(endPoster), currentNode.id);
                     // Hide video after crossfade completes (400ms transition + small buffer)
                     setTimeout(() => {
                         viewportVideo.style.display = 'none';
@@ -3204,8 +3218,9 @@
                 if (!response.ok) throw new Error('Failed to load manifest.json');
                 manifest = await response.json();
                 perfOverrides = manifest.perfOverrides || {};
+                mediaBase = manifest.terrain.mediaBase || '';
                 PerfMonitor.end('manifest-load', `${manifest.nodes?.length || 0} nodes`);
-                console.log('Manifest loaded:', manifest.terrain.title);
+                console.log('Manifest loaded:', manifest.terrain.title, mediaBase ? `(media: ${mediaBase})` : '(local media)');
                 
                 // Preload home node into persistent cache (never evicted)
                 preloadHomeNode();
@@ -3301,11 +3316,11 @@
                 
                 // Show start poster image
                 if (node.video.poster) {
-                    crossfadeToImage(node.video.poster, node.id);
+                    crossfadeToImage(resolveMediaUrl(node.video.poster), node.id);
                 }
                 
                 // Preload video (muted until user starts it)
-                viewportVideo.src = node.video.src;
+                viewportVideo.src = resolveMediaUrl(node.video.src);
                 viewportVideo.muted = true;
                 viewportVideo.load();
                 
@@ -3371,14 +3386,14 @@
                     audioFile = selectBundleFile(node.audio.files, node.audio.mode, node.id);
                 } else if (node.audio.type === 'playlist' && node.audio.source) {
                     isPlaylist = true;
-                    loadPlaylist(node.id, node.audio.source, versionAtEnter);
+                    loadPlaylist(node.id, resolveMediaUrl(node.audio.source), versionAtEnter);
                 } else if (node.audio.primary) {
                     audioFile = node.audio.primary;
                 }
 
                 if (audioFile && !isPlaylist) {
                     PerfMonitor.start('audio-load-' + node.id);
-                    primaryAudio.src = audioFile;
+                    primaryAudio.src = resolveMediaUrl(audioFile);
                     primaryAudio.loop = false;
                     
                     // Track audio load time
@@ -3421,12 +3436,12 @@
                 aux1CrossfadeAudio.pause();
                 aux1CrossfadeAudio.src = '';
 
-                aux1Audio.src = node.audio.aux1;
+                aux1Audio.src = resolveMediaUrl(node.audio.aux1);
                 const crossfadeDuration = node.audio.aux1Crossfade || 0;
 
                 if (crossfadeDuration > 0) {
                     aux1Audio.loop = false;
-                    setupAux1Crossfade(node.audio.aux1, crossfadeDuration);
+                    setupAux1Crossfade(resolveMediaUrl(node.audio.aux1), crossfadeDuration);
                 } else {
                     aux1Audio.loop = true;
                 }
@@ -3634,7 +3649,7 @@
                 transitionAudio.ontimeupdate = null;
                 
                 // Set up the new transition
-                transitionAudio.src = transitionAudioFile;
+                transitionAudio.src = resolveMediaUrl(transitionAudioFile);
                 
                 // Apply volume adjustment if specified
                 const volumeAdjustment = transition.volume || 0;
@@ -4070,7 +4085,7 @@
                     if (needsReload && currentNode?.audio?.primary) {
                         // Audio element is in bad state, reload it
                         console.log('Audio needs reload, reloading from node');
-                        primaryAudio.src = currentNode.audio.primary;
+                        primaryAudio.src = resolveMediaUrl(currentNode.audio.primary);
                         primaryAudio.load();
                         primaryAudio.currentTime = 0;
                         primaryAudio.play().catch(e => console.log('Audio play failed:', e));

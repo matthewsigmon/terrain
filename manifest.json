@@ -3,7 +3,8 @@
     "id": "further-element",
     "title": "A Further Element",
     "version": "1.0",
-    "startNode": "0000.0"
+    "startNode": "0000.0",
+    "mediaBase": "https://media.terrainapp.org"
   },
   "nodes": [
     {
@@ -11,22 +12,22 @@
       "title": "Home - Start Here",
       "type": "connection",
       "audio": {
-        "primary": "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/nodes/0000.0.mp3",
-        "aux1": "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/aux/aux-0000.mp3",
+        "primary": "assets/audio/nodes/0000.0.mp3",
+        "aux1": "assets/audio/aux/aux-0000.mp3",
         "aux1Crossfade": 4000,
         "aux1FadeIn": 3000
       },
       "transition": {
         "type": "bundle",
         "files": [
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/1-F2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/2-G2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/3-A2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/4-B2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/5-C3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/6-D3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/7-E3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/8-F3.mp3"
+          "assets/audio/transitions/bundle-001/1-F2.mp3",
+          "assets/audio/transitions/bundle-001/2-G2.mp3",
+          "assets/audio/transitions/bundle-001/3-A2.mp3",
+          "assets/audio/transitions/bundle-001/4-B2.mp3",
+          "assets/audio/transitions/bundle-001/5-C3.mp3",
+          "assets/audio/transitions/bundle-001/6-D3.mp3",
+          "assets/audio/transitions/bundle-001/7-E3.mp3",
+          "assets/audio/transitions/bundle-001/8-F3.mp3"
         ],
         "mode": "random_tracked",
         "timing": -3000
@@ -62,21 +63,21 @@
       "type": "connection",
       "audio": {
         "bundleMode": "random_tracked",
-        "aux1": "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/aux/aux-0001.mp3",
+        "aux1": "assets/audio/aux/aux-0001.mp3",
         "aux1Crossfade": 5000
       },
       "transition": {
         "type": "bundle",
         "timing": 0,
         "files": [
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/1-F2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/2-G2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/3-A2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/4-B2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/5-C3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/6-D3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/7-E3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/8-F3.mp3"
+          "assets/audio/transitions/bundle-001/1-F2.mp3",
+          "assets/audio/transitions/bundle-001/2-G2.mp3",
+          "assets/audio/transitions/bundle-001/3-A2.mp3",
+          "assets/audio/transitions/bundle-001/4-B2.mp3",
+          "assets/audio/transitions/bundle-001/5-C3.mp3",
+          "assets/audio/transitions/bundle-001/6-D3.mp3",
+          "assets/audio/transitions/bundle-001/7-E3.mp3",
+          "assets/audio/transitions/bundle-001/8-F3.mp3"
         ],
         "mode": "random_tracked"
       },
@@ -114,21 +115,21 @@
       "title": "First-Time Visitor",
       "type": "connection",
       "audio": {
-        "primary": "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/nodes/0001.0-v2.mp3"
+        "primary": "assets/audio/nodes/0001.0-v2.mp3"
       },
       "transition": {
         "type": "bundle",
         "timing": -1000,
         "volume": 0,
         "files": [
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/1-F2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/2-G2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/3-A2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/4-B2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/5-C3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/6-D3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/7-E3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/8-F3.mp3"
+          "assets/audio/transitions/bundle-001/1-F2.mp3",
+          "assets/audio/transitions/bundle-001/2-G2.mp3",
+          "assets/audio/transitions/bundle-001/3-A2.mp3",
+          "assets/audio/transitions/bundle-001/4-B2.mp3",
+          "assets/audio/transitions/bundle-001/5-C3.mp3",
+          "assets/audio/transitions/bundle-001/6-D3.mp3",
+          "assets/audio/transitions/bundle-001/7-E3.mp3",
+          "assets/audio/transitions/bundle-001/8-F3.mp3"
         ],
         "mode": "random_tracked"
       },
@@ -167,10 +168,10 @@
       "title": "About me - or better still, you!",
       "type": "destination",
       "audio": {
-        "primary": "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/nodes/1000.0-me-main.mp3"
+        "primary": "assets/audio/nodes/1000.0-me-main.mp3"
       },
       "transition": {
-        "audio": "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/transition-002.mp3",
+        "audio": "assets/audio/transitions/transition-002.mp3",
         "volume": -5,
         "timing": -1000
       },
@@ -200,17 +201,17 @@
       "links": [],
       "tags": [],
       "autoNext": "0000.1",
-      "returnTransition": "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/trans-RET-001.mp3"
+      "returnTransition": "assets/audio/transitions/trans-RET-001.mp3"
     },
     {
       "id": "0001.1",
       "title": "Welcome to Terrain",
       "type": "destination",
       "audio": {
-        "primary": "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/nodes/0001.1.mp3"
+        "primary": "assets/audio/nodes/0001.1.mp3"
       },
       "transition": {
-        "audio": "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/transition-002.mp3",
+        "audio": "assets/audio/transitions/transition-002.mp3",
         "volume": -5
       },
       "visuals": [
@@ -232,10 +233,10 @@
       "title": "Art Portfolio Example",
       "type": "connection",
       "audio": {
-        "primary": "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/nodes/0001.2.mp3"
+        "primary": "assets/audio/nodes/0001.2.mp3"
       },
       "transition": {
-        "audio": "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/transition-002.mp3",
+        "audio": "assets/audio/transitions/transition-002.mp3",
         "volume": -5
       },
       "visuals": [
@@ -282,7 +283,7 @@
       "title": "An 'Interruptible' Choice",
       "type": "connection",
       "audio": {
-        "primary": "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/nodes/1000.1-farm.mp3"
+        "primary": "assets/audio/nodes/1000.1-farm.mp3"
       },
       "transition": {},
       "visuals": [
@@ -307,10 +308,10 @@
       "type": "destination",
       "audio": {
         "type": "playlist",
-        "source": "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/playlists/one-opens-up/one-opens-up.m3u"
+        "source": "assets/audio/playlists/one-opens-up/one-opens-up.m3u"
       },
       "transition": {
-        "audio": "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/transition-001.mp3"
+        "audio": "assets/audio/transitions/transition-001.mp3"
       },
       "visuals": [
         {
@@ -337,21 +338,21 @@
       "title": "One Opens Up - Track by Track",
       "type": "destination",
       "audio": {
-        "primary": "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/nodes/2000.0.mp3"
+        "primary": "assets/audio/nodes/2000.0.mp3"
       },
       "transition": {
         "type": "bundle",
         "timing": 0,
         "volume": 0,
         "files": [
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/1-F2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/2-G2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/3-A2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/4-B2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/5-C3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/6-D3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/7-E3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/8-F3.mp3"
+          "assets/audio/transitions/bundle-001/1-F2.mp3",
+          "assets/audio/transitions/bundle-001/2-G2.mp3",
+          "assets/audio/transitions/bundle-001/3-A2.mp3",
+          "assets/audio/transitions/bundle-001/4-B2.mp3",
+          "assets/audio/transitions/bundle-001/5-C3.mp3",
+          "assets/audio/transitions/bundle-001/6-D3.mp3",
+          "assets/audio/transitions/bundle-001/7-E3.mp3",
+          "assets/audio/transitions/bundle-001/8-F3.mp3"
         ],
         "mode": "random_tracked"
       },
@@ -444,7 +445,7 @@
       "title": "01. Leaving Day",
       "type": "destination",
       "audio": {
-        "primary": "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/playlists/one-opens-up/01-Leaving-Day.mp3",
+        "primary": "assets/audio/playlists/one-opens-up/01-Leaving-Day.mp3",
         "primaryTiming": 2000
       },
       "transition": {
@@ -452,14 +453,14 @@
         "timing": 0,
         "volume": 0,
         "files": [
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/1-F2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/2-G2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/3-A2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/4-B2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/5-C3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/6-D3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/7-E3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/8-F3.mp3"
+          "assets/audio/transitions/bundle-001/1-F2.mp3",
+          "assets/audio/transitions/bundle-001/2-G2.mp3",
+          "assets/audio/transitions/bundle-001/3-A2.mp3",
+          "assets/audio/transitions/bundle-001/4-B2.mp3",
+          "assets/audio/transitions/bundle-001/5-C3.mp3",
+          "assets/audio/transitions/bundle-001/6-D3.mp3",
+          "assets/audio/transitions/bundle-001/7-E3.mp3",
+          "assets/audio/transitions/bundle-001/8-F3.mp3"
         ],
         "mode": "random_tracked"
       },
@@ -487,7 +488,7 @@
       "title": "02. Underway",
       "type": "destination",
       "audio": {
-        "primary": "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/playlists/one-opens-up/02-Underway.mp3",
+        "primary": "assets/audio/playlists/one-opens-up/02-Underway.mp3",
         "primaryTiming": 2000
       },
       "transition": {
@@ -495,14 +496,14 @@
         "timing": 0,
         "volume": 0,
         "files": [
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/1-F2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/2-G2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/3-A2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/4-B2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/5-C3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/6-D3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/7-E3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/8-F3.mp3"
+          "assets/audio/transitions/bundle-001/1-F2.mp3",
+          "assets/audio/transitions/bundle-001/2-G2.mp3",
+          "assets/audio/transitions/bundle-001/3-A2.mp3",
+          "assets/audio/transitions/bundle-001/4-B2.mp3",
+          "assets/audio/transitions/bundle-001/5-C3.mp3",
+          "assets/audio/transitions/bundle-001/6-D3.mp3",
+          "assets/audio/transitions/bundle-001/7-E3.mp3",
+          "assets/audio/transitions/bundle-001/8-F3.mp3"
         ],
         "mode": "random_tracked"
       },
@@ -531,7 +532,7 @@
       "title": "03. Where Do You Go",
       "type": "destination",
       "audio": {
-        "primary": "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/playlists/one-opens-up/03-Where-Do-You-Go.mp3",
+        "primary": "assets/audio/playlists/one-opens-up/03-Where-Do-You-Go.mp3",
         "primaryTiming": 2000
       },
       "transition": {
@@ -539,14 +540,14 @@
         "timing": 0,
         "volume": 0,
         "files": [
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/1-F2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/2-G2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/3-A2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/4-B2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/5-C3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/6-D3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/7-E3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/8-F3.mp3"
+          "assets/audio/transitions/bundle-001/1-F2.mp3",
+          "assets/audio/transitions/bundle-001/2-G2.mp3",
+          "assets/audio/transitions/bundle-001/3-A2.mp3",
+          "assets/audio/transitions/bundle-001/4-B2.mp3",
+          "assets/audio/transitions/bundle-001/5-C3.mp3",
+          "assets/audio/transitions/bundle-001/6-D3.mp3",
+          "assets/audio/transitions/bundle-001/7-E3.mp3",
+          "assets/audio/transitions/bundle-001/8-F3.mp3"
         ],
         "mode": "random_tracked"
       },
@@ -575,7 +576,7 @@
       "title": "04. Angels In White",
       "type": "destination",
       "audio": {
-        "primary": "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/playlists/one-opens-up/04-Angels-In-White.mp3",
+        "primary": "assets/audio/playlists/one-opens-up/04-Angels-In-White.mp3",
         "primaryTiming": 2000
       },
       "transition": {
@@ -583,14 +584,14 @@
         "timing": 0,
         "volume": 0,
         "files": [
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/1-F2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/2-G2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/3-A2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/4-B2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/5-C3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/6-D3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/7-E3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/8-F3.mp3"
+          "assets/audio/transitions/bundle-001/1-F2.mp3",
+          "assets/audio/transitions/bundle-001/2-G2.mp3",
+          "assets/audio/transitions/bundle-001/3-A2.mp3",
+          "assets/audio/transitions/bundle-001/4-B2.mp3",
+          "assets/audio/transitions/bundle-001/5-C3.mp3",
+          "assets/audio/transitions/bundle-001/6-D3.mp3",
+          "assets/audio/transitions/bundle-001/7-E3.mp3",
+          "assets/audio/transitions/bundle-001/8-F3.mp3"
         ],
         "mode": "random_tracked"
       },
@@ -619,7 +620,7 @@
       "title": "05. Feels Like A Finger",
       "type": "destination",
       "audio": {
-        "primary": "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/playlists/one-opens-up/05-Feels-Like-A-Finger.mp3",
+        "primary": "assets/audio/playlists/one-opens-up/05-Feels-Like-A-Finger.mp3",
         "primaryTiming": 2000
       },
       "transition": {
@@ -627,14 +628,14 @@
         "timing": 0,
         "volume": 0,
         "files": [
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/1-F2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/2-G2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/3-A2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/4-B2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/5-C3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/6-D3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/7-E3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/8-F3.mp3"
+          "assets/audio/transitions/bundle-001/1-F2.mp3",
+          "assets/audio/transitions/bundle-001/2-G2.mp3",
+          "assets/audio/transitions/bundle-001/3-A2.mp3",
+          "assets/audio/transitions/bundle-001/4-B2.mp3",
+          "assets/audio/transitions/bundle-001/5-C3.mp3",
+          "assets/audio/transitions/bundle-001/6-D3.mp3",
+          "assets/audio/transitions/bundle-001/7-E3.mp3",
+          "assets/audio/transitions/bundle-001/8-F3.mp3"
         ],
         "mode": "random_tracked"
       },
@@ -663,7 +664,7 @@
       "title": "06. Fascination",
       "type": "destination",
       "audio": {
-        "primary": "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/playlists/one-opens-up/06-Fascination.mp3",
+        "primary": "assets/audio/playlists/one-opens-up/06-Fascination.mp3",
         "primaryTiming": 2000
       },
       "transition": {
@@ -671,14 +672,14 @@
         "timing": 0,
         "volume": 0,
         "files": [
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/1-F2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/2-G2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/3-A2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/4-B2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/5-C3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/6-D3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/7-E3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/8-F3.mp3"
+          "assets/audio/transitions/bundle-001/1-F2.mp3",
+          "assets/audio/transitions/bundle-001/2-G2.mp3",
+          "assets/audio/transitions/bundle-001/3-A2.mp3",
+          "assets/audio/transitions/bundle-001/4-B2.mp3",
+          "assets/audio/transitions/bundle-001/5-C3.mp3",
+          "assets/audio/transitions/bundle-001/6-D3.mp3",
+          "assets/audio/transitions/bundle-001/7-E3.mp3",
+          "assets/audio/transitions/bundle-001/8-F3.mp3"
         ],
         "mode": "random_tracked"
       },
@@ -707,7 +708,7 @@
       "title": "07. With You",
       "type": "destination",
       "audio": {
-        "primary": "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/playlists/one-opens-up/07-With-You.mp3",
+        "primary": "assets/audio/playlists/one-opens-up/07-With-You.mp3",
         "primaryTiming": 2000
       },
       "transition": {
@@ -715,14 +716,14 @@
         "timing": 0,
         "volume": 0,
         "files": [
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/1-F2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/2-G2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/3-A2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/4-B2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/5-C3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/6-D3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/7-E3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/8-F3.mp3"
+          "assets/audio/transitions/bundle-001/1-F2.mp3",
+          "assets/audio/transitions/bundle-001/2-G2.mp3",
+          "assets/audio/transitions/bundle-001/3-A2.mp3",
+          "assets/audio/transitions/bundle-001/4-B2.mp3",
+          "assets/audio/transitions/bundle-001/5-C3.mp3",
+          "assets/audio/transitions/bundle-001/6-D3.mp3",
+          "assets/audio/transitions/bundle-001/7-E3.mp3",
+          "assets/audio/transitions/bundle-001/8-F3.mp3"
         ],
         "mode": "random_tracked"
       },
@@ -751,7 +752,7 @@
       "title": "08. Millennium Man",
       "type": "destination",
       "audio": {
-        "primary": "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/playlists/one-opens-up/08-Millennium-Man.mp3",
+        "primary": "assets/audio/playlists/one-opens-up/08-Millennium-Man.mp3",
         "primaryTiming": 2000
       },
       "transition": {
@@ -759,14 +760,14 @@
         "timing": 0,
         "volume": 0,
         "files": [
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/1-F2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/2-G2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/3-A2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/4-B2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/5-C3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/6-D3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/7-E3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/8-F3.mp3"
+          "assets/audio/transitions/bundle-001/1-F2.mp3",
+          "assets/audio/transitions/bundle-001/2-G2.mp3",
+          "assets/audio/transitions/bundle-001/3-A2.mp3",
+          "assets/audio/transitions/bundle-001/4-B2.mp3",
+          "assets/audio/transitions/bundle-001/5-C3.mp3",
+          "assets/audio/transitions/bundle-001/6-D3.mp3",
+          "assets/audio/transitions/bundle-001/7-E3.mp3",
+          "assets/audio/transitions/bundle-001/8-F3.mp3"
         ],
         "mode": "random_tracked"
       },
@@ -795,7 +796,7 @@
       "title": "09. Not Tomorrow Yet",
       "type": "destination",
       "audio": {
-        "primary": "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/playlists/one-opens-up/09-Not-Tomorrow-Yet.mp3",
+        "primary": "assets/audio/playlists/one-opens-up/09-Not-Tomorrow-Yet.mp3",
         "primaryTiming": 2000
       },
       "transition": {
@@ -803,14 +804,14 @@
         "timing": 0,
         "volume": 0,
         "files": [
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/1-F2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/2-G2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/3-A2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/4-B2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/5-C3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/6-D3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/7-E3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/8-F3.mp3"
+          "assets/audio/transitions/bundle-001/1-F2.mp3",
+          "assets/audio/transitions/bundle-001/2-G2.mp3",
+          "assets/audio/transitions/bundle-001/3-A2.mp3",
+          "assets/audio/transitions/bundle-001/4-B2.mp3",
+          "assets/audio/transitions/bundle-001/5-C3.mp3",
+          "assets/audio/transitions/bundle-001/6-D3.mp3",
+          "assets/audio/transitions/bundle-001/7-E3.mp3",
+          "assets/audio/transitions/bundle-001/8-F3.mp3"
         ],
         "mode": "random_tracked"
       },
@@ -839,7 +840,7 @@
       "title": "10. Possibility ",
       "type": "destination",
       "audio": {
-        "primary": "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/playlists/one-opens-up/10-Possibility.mp3",
+        "primary": "assets/audio/playlists/one-opens-up/10-Possibility.mp3",
         "primaryTiming": 2000
       },
       "transition": {
@@ -847,14 +848,14 @@
         "timing": 0,
         "volume": 0,
         "files": [
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/1-F2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/2-G2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/3-A2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/4-B2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/5-C3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/6-D3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/7-E3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/8-F3.mp3"
+          "assets/audio/transitions/bundle-001/1-F2.mp3",
+          "assets/audio/transitions/bundle-001/2-G2.mp3",
+          "assets/audio/transitions/bundle-001/3-A2.mp3",
+          "assets/audio/transitions/bundle-001/4-B2.mp3",
+          "assets/audio/transitions/bundle-001/5-C3.mp3",
+          "assets/audio/transitions/bundle-001/6-D3.mp3",
+          "assets/audio/transitions/bundle-001/7-E3.mp3",
+          "assets/audio/transitions/bundle-001/8-F3.mp3"
         ],
         "mode": "random_tracked"
       },
@@ -883,7 +884,7 @@
       "title": "11. Sunny Shiny Moon",
       "type": "destination",
       "audio": {
-        "primary": "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/playlists/one-opens-up/11-Sunny-Shiny-Moon.mp3",
+        "primary": "assets/audio/playlists/one-opens-up/11-Sunny-Shiny-Moon.mp3",
         "primaryTiming": 2000
       },
       "transition": {
@@ -891,14 +892,14 @@
         "timing": 0,
         "volume": 0,
         "files": [
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/1-F2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/2-G2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/3-A2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/4-B2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/5-C3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/6-D3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/7-E3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/8-F3.mp3"
+          "assets/audio/transitions/bundle-001/1-F2.mp3",
+          "assets/audio/transitions/bundle-001/2-G2.mp3",
+          "assets/audio/transitions/bundle-001/3-A2.mp3",
+          "assets/audio/transitions/bundle-001/4-B2.mp3",
+          "assets/audio/transitions/bundle-001/5-C3.mp3",
+          "assets/audio/transitions/bundle-001/6-D3.mp3",
+          "assets/audio/transitions/bundle-001/7-E3.mp3",
+          "assets/audio/transitions/bundle-001/8-F3.mp3"
         ],
         "mode": "random_tracked"
       },
@@ -927,7 +928,7 @@
       "title": "12. My Real Address",
       "type": "destination",
       "audio": {
-        "primary": "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/playlists/one-opens-up/12-My-Real-Addess.mp3",
+        "primary": "assets/audio/playlists/one-opens-up/12-My-Real-Addess.mp3",
         "primaryTiming": 2000
       },
       "transition": {
@@ -935,14 +936,14 @@
         "timing": 0,
         "volume": 0,
         "files": [
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/1-F2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/2-G2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/3-A2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/4-B2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/5-C3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/6-D3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/7-E3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/8-F3.mp3"
+          "assets/audio/transitions/bundle-001/1-F2.mp3",
+          "assets/audio/transitions/bundle-001/2-G2.mp3",
+          "assets/audio/transitions/bundle-001/3-A2.mp3",
+          "assets/audio/transitions/bundle-001/4-B2.mp3",
+          "assets/audio/transitions/bundle-001/5-C3.mp3",
+          "assets/audio/transitions/bundle-001/6-D3.mp3",
+          "assets/audio/transitions/bundle-001/7-E3.mp3",
+          "assets/audio/transitions/bundle-001/8-F3.mp3"
         ],
         "mode": "random_tracked"
       },
@@ -971,7 +972,7 @@
       "title": "13. Between the I's",
       "type": "destination",
       "audio": {
-        "primary": "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/playlists/one-opens-up/13-Between-the-I's.mp3",
+        "primary": "assets/audio/playlists/one-opens-up/13-Between-the-I's.mp3",
         "primaryTiming": 2000
       },
       "transition": {
@@ -979,14 +980,14 @@
         "timing": 0,
         "volume": 0,
         "files": [
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/1-F2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/2-G2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/3-A2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/4-B2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/5-C3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/6-D3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/7-E3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/8-F3.mp3"
+          "assets/audio/transitions/bundle-001/1-F2.mp3",
+          "assets/audio/transitions/bundle-001/2-G2.mp3",
+          "assets/audio/transitions/bundle-001/3-A2.mp3",
+          "assets/audio/transitions/bundle-001/4-B2.mp3",
+          "assets/audio/transitions/bundle-001/5-C3.mp3",
+          "assets/audio/transitions/bundle-001/6-D3.mp3",
+          "assets/audio/transitions/bundle-001/7-E3.mp3",
+          "assets/audio/transitions/bundle-001/8-F3.mp3"
         ],
         "mode": "random_tracked"
       },
@@ -1020,14 +1021,14 @@
         "timing": 0,
         "volume": 0,
         "files": [
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/1-F2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/2-G2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/3-A2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/4-B2.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/5-C3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/6-D3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/7-E3.mp3",
-          "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/audio/transitions/bundle-001/8-F3.mp3"
+          "assets/audio/transitions/bundle-001/1-F2.mp3",
+          "assets/audio/transitions/bundle-001/2-G2.mp3",
+          "assets/audio/transitions/bundle-001/3-A2.mp3",
+          "assets/audio/transitions/bundle-001/4-B2.mp3",
+          "assets/audio/transitions/bundle-001/5-C3.mp3",
+          "assets/audio/transitions/bundle-001/6-D3.mp3",
+          "assets/audio/transitions/bundle-001/7-E3.mp3",
+          "assets/audio/transitions/bundle-001/8-F3.mp3"
         ],
         "mode": "random_tracked"
       },
@@ -1043,9 +1044,9 @@
       "links": [],
       "tags": [],
       "video": {
-        "src": "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/video/1000/1000.2.mp4",
-        "poster": "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/video/1000/1000.2-1.jpg",
-        "endPoster": "https://pub-88e2050cf8ba41b3911ed6306f410364.r2.dev/assets/video/1000/1000.2-2.jpg"
+        "src": "assets/video/1000/1000.2.mp4",
+        "poster": "assets/video/1000/1000.2-1.jpg",
+        "endPoster": "assets/video/1000/1000.2-2.jpg"
       },
       "autoNext": "0000.1",
       "preload": true
