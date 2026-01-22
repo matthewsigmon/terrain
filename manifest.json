@@ -12,7 +12,7 @@
       "title": "Home - Start Here",
       "type": "connection",
       "audio": {
-        "primary": "assets/audio/nodes/0000.0.mp3",
+        "primary": "assets/audio/nodes/0000.0-1.mp3",
         "aux1": "assets/audio/aux/aux-0000.mp3",
         "aux1Crossfade": 4000,
         "aux1Volume": -5
