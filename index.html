@@ -3954,9 +3954,24 @@
             const media = getActiveMediaElement();
             const hasPrimary = !!(media && media.src && media.src !== '');
             const hasAux1 = !!(aux1Audio && aux1Audio.src && aux1Audio.src !== '');
+            const hasVideo = isVideoActive() || videoState === 'ready';
+            
+            // Aux-only nodes: disable the pause button (aux is ambient, not controllable)
+            if (!hasPrimary && !hasVideo && hasAux1) {
+                btn.classList.add('disabled');
+                btn.style.opacity = '0.3';
+                btn.style.pointerEvents = 'none';
+                setBtnIcon(btn, iconPause(), 'Pause');
+                return;
+            }
+            
+            // Re-enable button if it was previously disabled
+            btn.classList.remove('disabled');
+            btn.style.opacity = '';
+            btn.style.pointerEvents = '';
             
             // User preference: on init (nothing loaded yet), show PAUSE (not PLAY)
-            if (forceDefaultPause || (!hasPrimary && !hasAux1)) {
+            if (forceDefaultPause || (!hasPrimary && !hasAux1 && !hasVideo)) {
                 setBtnIcon(btn, iconPause(), 'Pause');
                 return;
             }
@@ -3965,8 +3980,8 @@
             let isPaused;
             if (hasPrimary) {
                 isPaused = media.paused;
-            } else if (hasAux1) {
-                isPaused = aux1Audio.paused;
+            } else if (hasVideo) {
+                isPaused = viewportVideo.paused;
             } else {
                 isPaused = true;
             }
@@ -4173,6 +4188,11 @@
                     const hasPrimary = primaryAudio.src && primaryAudio.src !== '';
                     const hasAux1 = aux1Audio.src && aux1Audio.src !== '';
                     
+                    // Aux-only nodes: pause is disabled, ignore the key
+                    if (!hasPrimary && hasAux1) {
+                        return;
+                    }
+                    
                     if (hasPrimary) {
                         // Primary audio exists - toggle it (and aux1 follows)
                         if (primaryAudio.paused) {
@@ -4183,13 +4203,6 @@
                             primaryAudio.pause();
                             aux1Audio.pause();
                             stopProgressUpdates();
-                        }
-                    } else if (hasAux1) {
-                        // Aux1 only - toggle just aux1
-                        if (aux1Audio.paused) {
-                            aux1Audio.play().catch(e => console.log('Aux1 resume failed:', e));
-                        } else {
-                            aux1Audio.pause();
                         }
                     }
                 }
