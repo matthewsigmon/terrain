@@ -2992,6 +2992,9 @@
             if (!videoState) {
                 checkInterruptibles();
             }
+            
+            // Check for timed visual changes
+            checkTimedVisuals();
         }
 
         function startProgressUpdates() {
@@ -3057,6 +3060,58 @@
             }
         }
 
+        // Track last shown timed visual to avoid redundant crossfades
+        let lastTimedVisualStart = -1;
+
+        function checkTimedVisuals() {
+            if (!currentNode || !currentNode.visuals || currentNode.visuals.length <= 1) return;
+            
+            const media = getActiveMediaElement();
+            if (!media || !media.src || !media.duration) return;
+            
+            const currentTimeMs = media.currentTime * 1000;
+            
+            // Find timed visuals (those with start > 0)
+            const timedVisuals = currentNode.visuals
+                .filter(v => v.start > 0 && v.type === 'image')
+                .sort((a, b) => a.start - b.start);
+            
+            if (timedVisuals.length === 0) return;
+            
+            // Find the visual that should be showing right now
+            // A visual is active if: currentTime >= start AND (duration is 0 OR currentTime < start + duration)
+            let activeVisual = null;
+            for (const visual of timedVisuals) {
+                const visualEnd = visual.duration > 0 ? visual.start + visual.duration : Infinity;
+                if (currentTimeMs >= visual.start && currentTimeMs < visualEnd) {
+                    activeVisual = visual;
+                }
+            }
+            
+            if (activeVisual) {
+                // Show timed visual if different from what we're showing
+                if (activeVisual.start !== lastTimedVisualStart) {
+                    console.log('Timed visual triggered:', activeVisual.src, 'at', activeVisual.start, 'ms');
+                    crossfadeToImage(activeVisual.src, currentNode.id);
+                    lastTimedVisualStart = activeVisual.start;
+                }
+            } else {
+                // No timed visual is active - show the default (first) image if we were showing a timed one
+                if (lastTimedVisualStart > 0) {
+                    const defaultVisual = currentNode.visuals.find(v => v.start === 0 && v.type === 'image');
+                    if (defaultVisual) {
+                        console.log('Timed visual duration ended, reverting to default:', defaultVisual.src);
+                        crossfadeToImage(defaultVisual.src, currentNode.id);
+                        lastTimedVisualStart = 0;
+                    }
+                }
+            }
+        }
+
+        function resetTimedVisualState() {
+            lastTimedVisualStart = -1;
+        }
+
         // Scrub on click (works for both audio and video)
         inputField.addEventListener('click', (e) => {
             if (isAddressMode || inputValue.length > 0) return;
@@ -3074,8 +3129,8 @@
             media.currentTime = seekTime;
             updateProgressBar();
             
-            // After seeking, check interruptibles (with small delay for audio to settle)
-            // This catches any choices at timestamps we scrubbed past
+            // After seeking, check interruptibles and timed visuals (with small delay for audio to settle)
+            // This catches any choices/visuals at timestamps we scrubbed past
             if (!videoState) {
                 setTimeout(() => {
                     checkInterruptibles();
@@ -3092,6 +3147,9 @@
                             showInterruptibleVisual(latest.time);
                         }
                     }
+                    
+                    // Check for timed visuals we scrubbed past
+                    checkTimedVisuals();
                 }, 50);
             }
         });
@@ -3280,6 +3338,7 @@
             Timers.clearAll();
 
             activeInterruptibles = [];
+            resetTimedVisualState();
             stopProgressUpdates();
             clearProgressBar();
 

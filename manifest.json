@@ -15,7 +15,7 @@
         "primary": "assets/audio/nodes/0000.0.mp3",
         "aux1": "assets/audio/aux/aux-0000.mp3",
         "aux1Crossfade": 4000,
-        "aux1FadeIn": 3000
+        "aux1Volume": -5
       },
       "transition": {
         "type": "bundle",
@@ -38,6 +38,12 @@
           "src": "assets/images/nodes/0000.0.jpg",
           "start": 0,
           "duration": 0
+        },
+        {
+          "type": "image",
+          "src": "assets/images/nodes/0000.0-2.jpg",
+          "start": 168000,
+          "duration": 9000
         }
       ],
       "choices": [
