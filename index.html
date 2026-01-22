@@ -3066,7 +3066,16 @@
         function checkTimedVisuals() {
             if (!currentNode || !currentNode.visuals || currentNode.visuals.length <= 1) return;
             
-            const media = getActiveMediaElement();
+            // Get the appropriate media element for timing
+            // Use primary audio or video if available, fall back to aux1 for aux-only nodes
+            let media = getActiveMediaElement();
+            const hasPrimary = media && media.src && media.src !== '';
+            const hasAux1 = aux1Audio && aux1Audio.src && aux1Audio.src !== '';
+            
+            if (!hasPrimary && hasAux1) {
+                media = aux1Audio;
+            }
+            
             if (!media || !media.src || !media.duration) return;
             
             const currentTimeMs = media.currentTime * 1000;
