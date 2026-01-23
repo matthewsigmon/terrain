@@ -121,7 +121,7 @@
       "title": "First-Time Visitor",
       "type": "connection",
       "audio": {
-        "primary": "assets/audio/nodes/0001.0-v2.mp3"
+        "primary": "assets/audio/nodes/0001.0.mp3"
       },
       "transition": {
         "type": "bundle",
