@@ -1504,6 +1504,9 @@
                 <img id="viewportImageA" class="viewport-image active" src="start.jpg" alt="" style="opacity: 1;">
                 <img id="viewportImageB" class="viewport-image" alt="" style="opacity: 0;">
                 
+                <!-- Timed video clip layer (for inline video clips during audio nodes) -->
+                <video id="timedClipVideo" class="viewport-video" playsinline muted style="display: none; opacity: 0;"></video>
+                
                 <!-- Video layer (above images, below overlays) -->
                 <video id="viewportVideo" class="viewport-video" playsinline style="display: none;"></video>
                 
@@ -2743,6 +2746,7 @@
         const carouselCounter = document.getElementById('carouselCounter');
         const carouselCaption = document.getElementById('carouselCaption');
         const viewportVideo = document.getElementById('viewportVideo');
+        const timedClipVideo = document.getElementById('timedClipVideo');
 
         // ===========================================
         // VIDEO NODE STATE
@@ -3062,6 +3066,7 @@
 
         // Track last shown timed visual to avoid redundant crossfades
         let lastTimedVisualStart = -1;
+        let timedClipPlaying = false;
 
         function checkTimedVisuals() {
             if (!currentNode || !currentNode.visuals || currentNode.visuals.length <= 1) return;
@@ -3080,9 +3085,9 @@
             
             const currentTimeMs = media.currentTime * 1000;
             
-            // Find timed visuals (those with start > 0)
+            // Find timed visuals (those with start > 0) - both images and videos
             const timedVisuals = currentNode.visuals
-                .filter(v => v.start > 0 && v.type === 'image')
+                .filter(v => v.start > 0 && (v.type === 'image' || v.type === 'video'))
                 .sort((a, b) => a.start - b.start);
             
             if (timedVisuals.length === 0) return;
@@ -3100,13 +3105,20 @@
             if (activeVisual) {
                 // Show timed visual if different from what we're showing
                 if (activeVisual.start !== lastTimedVisualStart) {
-                    console.log('Timed visual triggered:', activeVisual.src, 'at', activeVisual.start, 'ms');
-                    crossfadeToImage(activeVisual.src, currentNode.id);
+                    console.log('Timed visual triggered:', activeVisual.type, activeVisual.src, 'at', activeVisual.start, 'ms');
+                    
+                    if (activeVisual.type === 'video') {
+                        playTimedClip(activeVisual.src);
+                    } else {
+                        stopTimedClip();
+                        crossfadeToImage(activeVisual.src, currentNode.id);
+                    }
                     lastTimedVisualStart = activeVisual.start;
                 }
             } else {
                 // No timed visual is active - show the default (first) image if we were showing a timed one
                 if (lastTimedVisualStart > 0) {
+                    stopTimedClip();
                     const defaultVisual = currentNode.visuals.find(v => v.start === 0 && v.type === 'image');
                     if (defaultVisual) {
                         console.log('Timed visual duration ended, reverting to default:', defaultVisual.src);
@@ -3117,8 +3129,53 @@
             }
         }
 
+        function playTimedClip(src) {
+            if (!timedClipVideo) return;
+            
+            const resolvedSrc = resolveMediaUrl(src);
+            timedClipVideo.src = resolvedSrc;
+            timedClipVideo.muted = true;
+            timedClipVideo.currentTime = 0;
+            timedClipVideo.style.display = 'block';
+            
+            // Fade in the video
+            timedClipVideo.style.transition = 'opacity 0.4s ease-in-out';
+            timedClipVideo.style.opacity = '0';
+            
+            timedClipVideo.play().then(() => {
+                timedClipPlaying = true;
+                // Fade in after play starts
+                requestAnimationFrame(() => {
+                    timedClipVideo.style.opacity = '1';
+                });
+            }).catch(e => {
+                console.log('Timed clip play failed:', e);
+            });
+            
+            console.log('Timed clip started:', src);
+        }
+
+        function stopTimedClip() {
+            if (!timedClipVideo || !timedClipPlaying) return;
+            
+            // Fade out
+            timedClipVideo.style.transition = 'opacity 0.4s ease-in-out';
+            timedClipVideo.style.opacity = '0';
+            
+            // After fade, stop and hide
+            setTimeout(() => {
+                timedClipVideo.pause();
+                timedClipVideo.src = '';
+                timedClipVideo.style.display = 'none';
+                timedClipPlaying = false;
+            }, 400);
+            
+            console.log('Timed clip stopped');
+        }
+
         function resetTimedVisualState() {
             lastTimedVisualStart = -1;
+            stopTimedClip();
         }
 
         // Scrub on click (works for both audio and video)

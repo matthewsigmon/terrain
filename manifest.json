@@ -1,10 +1,9 @@
 {
   "terrain": {
-    "id": "further-element",
-    "title": "A Further Element",
+    "id": "terrain-app",
+    "title": "Terrain: Multi-dimensional Publishing",
     "version": "1.0",
-    "startNode": "0000.0",
-    "mediaBase": "https://media.terrainapp.org"
+    "startNode": "0000.0"
   },
   "nodes": [
     {
