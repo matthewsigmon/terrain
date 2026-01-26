@@ -1093,7 +1093,8 @@
       "title": "Pioneer Visual Editor",
       "type": "connection",
       "audio": {
-        "primary": "assets/audio/nodes/0001.11.mp3"
+        "aux1": "assets/audio/nodes/0001.11.mp3",
+        "aux1Crossfade": 4000
       },
       "transition": {
         "type": "bundle",
