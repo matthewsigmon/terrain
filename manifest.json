@@ -216,8 +216,7 @@
       "audio": {
         "primary": "assets/audio/nodes/0001.1.mp3",
         "aux1Crossfade": 4000,
-        "aux1Volume": -5,
-        "aux1": "assets/audio/aux/aux-0001.1.mp3"
+        "aux1Volume": -5
       },
       "transition": {
         "type": "bundle",
