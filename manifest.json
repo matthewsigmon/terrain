@@ -3,7 +3,8 @@
     "id": "terrain-app",
     "title": "Terrain: Multipath Publishing Platform",
     "version": "1.0",
-    "startNode": "0000.0"
+    "startNode": "0000.0",
+    "mediaBase": "https://media.terrainapp.org"
   },
   "nodes": [
     {
