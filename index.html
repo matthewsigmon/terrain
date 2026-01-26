@@ -1868,8 +1868,7 @@
         }
         
         function preloadImage(src) {
-            // Resolve URL for R2/CDN hosted media
-            src = resolveMediaUrl(src);
+            // Images are served from Pages (local), not R2 - don't resolve URL
             return new Promise((resolve, reject) => {
                 const img = new Image();
                 img.onload = () => resolve(img);
@@ -2768,9 +2767,9 @@
             video.loop = false;
             video.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1;';
             
-            // Set poster if provided
+            // Set poster if provided (posters are images, served from Pages)
             if (posterSrc) {
-                video.poster = resolveMediaUrl(posterSrc);
+                video.poster = posterSrc;
             }
 
             // Safari-specific: handle unexpected video pause (silent recovery)
@@ -3891,8 +3890,7 @@
         }
 
         function crossfadeToImage(newSrc, nodeId = null) {
-            // Resolve URL for R2/CDN hosted media
-            newSrc = resolveMediaUrl(newSrc);
+            // Images are served from Pages (local), not R2 - don't resolve URL
             PerfMonitor.start('crossfade-' + newSrc.split('/').pop());
             const imageA = document.getElementById('viewportImageA');
             const imageB = document.getElementById('viewportImageB');
