@@ -1,10 +1,9 @@
 {
   "terrain": {
     "id": "terrain-app",
-    "title": "Terrain: Multi-dimensional Publishing",
+    "title": "Terrain: Multipath Publishing Platform",
     "version": "1.0",
-    "startNode": "0000.0",
-    "mediaBase": "https://media.terrainapp.org"
+    "startNode": "0000.0"
   },
   "nodes": [
     {
@@ -211,28 +210,59 @@
     },
     {
       "id": "0001.1",
-      "title": "Welcome to Terrain",
-      "type": "destination",
+      "title": "What is Terrain?",
+      "type": "connection",
       "audio": {
         "primary": "assets/audio/nodes/0001.1.mp3"
       },
       "transition": {
-        "audio": "assets/audio/transitions/transition-002.mp3",
-        "volume": -5
+        "type": "bundle",
+        "timing": 0,
+        "volume": 0,
+        "files": [
+          "assets/audio/transitions/bundle-001/1-F2.mp3",
+          "assets/audio/transitions/bundle-001/2-G2.mp3",
+          "assets/audio/transitions/bundle-001/3-A2.mp3",
+          "assets/audio/transitions/bundle-001/4-B2.mp3",
+          "assets/audio/transitions/bundle-001/5-C3.mp3",
+          "assets/audio/transitions/bundle-001/6-D3.mp3",
+          "assets/audio/transitions/bundle-001/7-E3.mp3",
+          "assets/audio/transitions/bundle-001/8-F3.mp3"
+        ],
+        "mode": "random_tracked"
       },
       "visuals": [
         {
-          "type": "image",
-          "src": "assets/images/nodes/0001.1.jpg",
+          "type": "video",
+          "src": "assets/video/0001.1/0001.1.mp4",
           "start": 0,
-          "duration": 0
+          "duration": 141000
         }
       ],
-      "choices": [],
-      "interruptible": [],
+      "choices": [
+        {
+          "key": "2",
+          "label": "Use Cases",
+          "target": "0001.12"
+        },
+        {
+          "key": "3",
+          "label": "Demo Examples",
+          "target": "0001.13"
+        }
+      ],
+      "interruptible": [
+        {
+          "time": 102000,
+          "key": "1",
+          "label": "Pioneer Visual Editor",
+          "target": "0001.11"
+        }
+      ],
       "links": [],
       "tags": [],
-      "autoNext": "0000.1"
+      "autoNext": "0000.1",
+      "returnTransition": "assets/audio/transitions/trans-RET-001.mp3"
     },
     {
       "id": "0001.2",
@@ -1056,6 +1086,118 @@
       },
       "autoNext": "0000.1",
       "preload": true
+    },
+    {
+      "id": "0001.11",
+      "title": "Pioneer Visual Editor",
+      "type": "connection",
+      "audio": {
+        "primary": "assets/audio/nodes/0001.11.mp3"
+      },
+      "transition": {
+        "type": "bundle",
+        "timing": 0,
+        "volume": 0,
+        "files": [
+          "assets/audio/transitions/bundle-001/1-F2.mp3",
+          "assets/audio/transitions/bundle-001/2-G2.mp3",
+          "assets/audio/transitions/bundle-001/3-A2.mp3",
+          "assets/audio/transitions/bundle-001/4-B2.mp3",
+          "assets/audio/transitions/bundle-001/5-C3.mp3",
+          "assets/audio/transitions/bundle-001/6-D3.mp3",
+          "assets/audio/transitions/bundle-001/7-E3.mp3",
+          "assets/audio/transitions/bundle-001/8-F3.mp3"
+        ],
+        "mode": "random_tracked"
+      },
+      "visuals": [
+        {
+          "type": "image",
+          "src": "assets/images/nodes/0001.11.jpg",
+          "start": 0,
+          "duration": 0
+        }
+      ],
+      "choices": [],
+      "interruptible": [],
+      "links": [],
+      "tags": [],
+      "autoNext": "",
+      "returnTransition": "assets/audio/transitions/trans-RET-001.mp3"
+    },
+    {
+      "id": "0001.12",
+      "title": "Use Cases",
+      "type": "destination",
+      "audio": {
+        "primary": "assets/audio/nodes/0001.12.mp3"
+      },
+      "transition": {
+        "type": "bundle",
+        "timing": 0,
+        "volume": 0,
+        "files": [
+          "assets/audio/transitions/bundle-001/1-F2.mp3",
+          "assets/audio/transitions/bundle-001/2-G2.mp3",
+          "assets/audio/transitions/bundle-001/3-A2.mp3",
+          "assets/audio/transitions/bundle-001/4-B2.mp3",
+          "assets/audio/transitions/bundle-001/5-C3.mp3",
+          "assets/audio/transitions/bundle-001/6-D3.mp3",
+          "assets/audio/transitions/bundle-001/7-E3.mp3",
+          "assets/audio/transitions/bundle-001/8-F3.mp3"
+        ],
+        "mode": "random_tracked"
+      },
+      "visuals": [
+        {
+          "type": "image",
+          "src": "assets/images/nodes/0001.12.jpg",
+          "start": 0,
+          "duration": 0
+        }
+      ],
+      "choices": [],
+      "interruptible": [],
+      "links": [],
+      "tags": [],
+      "autoNext": "0000.1"
+    },
+    {
+      "id": "0001.13",
+      "title": "Demo Examples",
+      "type": "destination",
+      "audio": {
+        "primary": "assets/audio/nodes/0001.13.mp3"
+      },
+      "transition": {
+        "type": "bundle",
+        "timing": 0,
+        "volume": 0,
+        "files": [
+          "assets/audio/transitions/bundle-001/1-F2.mp3",
+          "assets/audio/transitions/bundle-001/2-G2.mp3",
+          "assets/audio/transitions/bundle-001/3-A2.mp3",
+          "assets/audio/transitions/bundle-001/4-B2.mp3",
+          "assets/audio/transitions/bundle-001/5-C3.mp3",
+          "assets/audio/transitions/bundle-001/6-D3.mp3",
+          "assets/audio/transitions/bundle-001/7-E3.mp3",
+          "assets/audio/transitions/bundle-001/8-F3.mp3"
+        ],
+        "mode": "random_tracked"
+      },
+      "visuals": [
+        {
+          "type": "image",
+          "src": "assets/images/nodes/0001.13.jpg",
+          "start": 0,
+          "duration": 0
+        }
+      ],
+      "choices": [],
+      "interruptible": [],
+      "links": [],
+      "tags": [],
+      "autoNext": "0000.1"
     }
   ]
 }

@@ -1504,9 +1504,6 @@
                 <img id="viewportImageA" class="viewport-image active" src="start.jpg" alt="" style="opacity: 1;">
                 <img id="viewportImageB" class="viewport-image" alt="" style="opacity: 0;">
                 
-                <!-- Timed video clip layer (for inline video clips during audio nodes) -->
-                <video id="timedClipVideo" class="viewport-video" playsinline muted style="display: none; opacity: 0;"></video>
-                
                 <!-- Video layer (above images, below overlays) -->
                 <video id="viewportVideo" class="viewport-video" playsinline style="display: none;"></video>
                 
@@ -1541,7 +1538,7 @@
         <div id="navigatorOverlay" class="navigator-overlay">
             <div class="navigator-container">
                 <div class="navigator-header">
-                    <div class="navigator-title">Navigator</div>
+                    <div class="navigator-title">Navigator Index</div>
                     <button class="close-btn" onclick="closeNavigator()" aria-label="Close">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
                             <path d="M18 6L6 18M6 6l12 12"/>
@@ -1790,7 +1787,6 @@
         // STATE
         // ===========================================
         let manifest = null;
-        let mediaBase = ''; // Base URL for audio/video assets (set from manifest.terrain.mediaBase)
         let currentNode = null;
         let inputValue = '';
         let appStarted = false;
@@ -1817,22 +1813,6 @@
 
         let audioBookmark = null; // Stores { nodeId, timestamp } for return navigation
         let activeInterruptibles = []; // Currently available interruptible choices
-
-        // ===========================================
-        // MEDIA URL RESOLUTION
-        // ===========================================
-        // Prepends mediaBase to relative paths (audio/video hosted on R2)
-        // For local dev: set mediaBase to '' in manifest.json
-        // For production: set mediaBase to 'https://media.terrainapp.org'
-        function resolveMediaUrl(path) {
-            if (!path) return path;
-            // If already absolute URL, return as-is
-            if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('data:')) {
-                return path;
-            }
-            // Prepend mediaBase for relative paths
-            return mediaBase ? `${mediaBase}/${path}` : path;
-        }
 
         // ===========================================
         // ASSET PRELOADING
@@ -1961,8 +1941,7 @@
             } else if (node.visuals && node.visuals.length > 0 && node.visuals[0].type === 'image') {
                 imageSrc = node.visuals[0].src;
             } else if (node.video && node.video.poster) {
-                // Video posters are on R2, need to resolve the URL
-                imageSrc = resolveMediaUrl(node.video.poster);
+                imageSrc = node.video.poster;
             }
             
             if (imageSrc) {
@@ -2746,13 +2725,152 @@
         const carouselCounter = document.getElementById('carouselCounter');
         const carouselCaption = document.getElementById('carouselCaption');
         const viewportVideo = document.getElementById('viewportVideo');
-        const timedClipVideo = document.getElementById('timedClipVideo');
 
         // ===========================================
         // VIDEO NODE STATE
         // ===========================================
         // States: null (no video), 'ready', 'playing', 'paused', 'ended'
         let videoState = null;
+
+        // ===========================================
+        // TIMED VIDEO STATE (video in visuals array synced to primary audio)
+        // ===========================================
+        let timedVideo = null;  // Reference to active timed video element
+        let timedVideoScheduled = [];  // Scheduled timed video switches
+
+        function setupTimedVideo(videoSrc, startTime, duration, posterSrc) {
+            // Create video element in viewport
+            const video = document.createElement('video');
+            video.src = videoSrc;
+            video.autoplay = false;  // We'll control playback
+            video.controls = false;
+            video.playsInline = true;
+            video.muted = true;  // Muted because audio comes from primaryAudio
+            video.loop = false;
+            video.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1;';
+            
+            // Set poster if provided
+            if (posterSrc) {
+                video.poster = posterSrc;
+            }
+
+            // Safari-specific: handle unexpected video pause (silent recovery)
+            video.addEventListener('pause', () => {
+                // If video paused unexpectedly while audio is playing, just resume (no seek)
+                if (timedVideo === video && !primaryAudio.paused && !video.ended) {
+                    video.play().catch(() => {});
+                }
+            });
+
+            // Log errors only
+            video.addEventListener('error', (e) => {
+                console.error('Timed video error:', video.error?.message || e);
+            });
+
+            // Add to viewport
+            const viewport = document.getElementById('viewport');
+            viewport.appendChild(video);
+            timedVideo = video;
+
+            // Preload the video
+            video.load();
+
+            return video;
+        }
+
+        function cleanupTimedVideo() {
+            if (timedVideo) {
+                timedVideo.pause();
+                timedVideo.src = '';
+                if (timedVideo.parentNode) {
+                    timedVideo.parentNode.removeChild(timedVideo);
+                }
+                timedVideo = null;
+            }
+            // Clear any scheduled video switches
+            timedVideoScheduled.forEach(id => Timers.clearTimeout(id));
+            timedVideoScheduled = [];
+        }
+
+        function syncTimedVideoToAudio() {
+            // Sync timed video playback position to primaryAudio
+            // Called on explicit sync points (resume, seek) - not continuously
+            if (!timedVideo || !timedVideo.parentNode || !primaryAudio.src) return;
+            
+            timedVideo.currentTime = primaryAudio.currentTime;
+            
+            // Match play/pause state
+            if (!primaryAudio.paused && timedVideo.paused && !timedVideo.ended) {
+                timedVideo.play().catch(e => console.log('Timed video sync play failed:', e));
+            } else if (primaryAudio.paused && !timedVideo.paused) {
+                timedVideo.pause();
+            }
+        }
+
+        function scheduleTimedVisuals(node) {
+            // Clear any existing scheduled visuals
+            timedVideoScheduled.forEach(id => Timers.clearTimeout(id));
+            timedVideoScheduled = [];
+            
+            if (!node.visuals || node.visuals.length <= 1) return;
+            
+            // Schedule visuals with start > 0
+            node.visuals.forEach((visual, index) => {
+                if (index === 0) return;  // First visual already shown
+                if (!visual.start || visual.start <= 0) return;
+                
+                const timerId = Timers.setTimeout(() => {
+                    if (visual.type === 'image') {
+                        // Cleanup timed video if switching to image
+                        cleanupTimedVideo();
+                        crossfadeToImage(visual.src, node.id);
+                    } else if (visual.type === 'video') {
+                        // Switch to new timed video
+                        cleanupTimedVideo();
+                        const video = setupTimedVideo(visual.src, 0, visual.duration || 0, visual.poster);
+                        // Start immediately since we're at the scheduled time
+                        video.play().catch(e => console.log('Scheduled timed video play failed:', e));
+                    }
+                }, visual.start);
+                
+                timedVideoScheduled.push(timerId);
+            });
+        }
+
+        function showTimedVisualAtTime(timestamp) {
+            // Find the appropriate visual for a given timestamp (used on seek/return)
+            if (!currentNode || !currentNode.visuals) return;
+            
+            // Find the visual that should be active at this timestamp
+            // (latest visual with start <= timestamp)
+            const activeVisual = currentNode.visuals
+                .filter(v => (v.start || 0) <= timestamp)
+                .sort((a, b) => (b.start || 0) - (a.start || 0))[0];
+            
+            if (activeVisual) {
+                if (activeVisual.type === 'image') {
+                    cleanupTimedVideo();
+                    crossfadeToImage(activeVisual.src, currentNode.id);
+                } else if (activeVisual.type === 'video') {
+                    // If we already have a timed video, just seek it
+                    if (timedVideo && timedVideo.parentNode) {
+                        const videoStartTime = activeVisual.start || 0;
+                        const videoOffset = (timestamp - videoStartTime) / 1000;
+                        timedVideo.currentTime = Math.max(0, videoOffset);
+                        if (timedVideo.paused && !primaryAudio.paused) {
+                            timedVideo.play().catch(() => {});
+                        }
+                    } else {
+                        // No timed video yet, create one
+                        const video = setupTimedVideo(activeVisual.src, 0, activeVisual.duration || 0, activeVisual.poster);
+                        const videoStartTime = activeVisual.start || 0;
+                        const videoOffset = (timestamp - videoStartTime) / 1000;
+                        video.currentTime = Math.max(0, videoOffset);
+                        video.play().catch(e => console.log('Timed video seek play failed:', e));
+                    }
+                }
+            }
+        }
 
         function getActiveMediaElement() {
             // Returns video element if video node is active, otherwise primaryAudio
@@ -2805,7 +2923,7 @@
                 // Start crossfade BEFORE hiding video, so end poster appears underneath
                 const endPoster = currentNode.video.endPoster || currentNode.video.poster;
                 if (endPoster) {
-                    crossfadeToImage(resolveMediaUrl(endPoster), currentNode.id);
+                    crossfadeToImage(endPoster, currentNode.id);
                     // Hide video after crossfade completes (400ms transition + small buffer)
                     setTimeout(() => {
                         viewportVideo.style.display = 'none';
@@ -2992,13 +3110,26 @@
                 progressText.textContent = displayText;
             }
             
-            // Check for interruptible choices (audio only, not during video)
+            // Check for interruptible choices (audio-driven, including timed video nodes)
+            // videoState is only set for standalone video nodes (node.video), not timed videos
             if (!videoState) {
                 checkInterruptibles();
+                
+                // Light periodic check - only correct severe drift (> 2 seconds)
+                // Check every 5 seconds to minimize performance impact
+                if (timedVideo && timedVideo.parentNode && !primaryAudio.paused && !timedVideo.paused) {
+                    const now = Date.now();
+                    const lastSyncCheck = timedVideo._lastSyncCheck || 0;
+                    
+                    if (now - lastSyncCheck > 5000) {
+                        timedVideo._lastSyncCheck = now;
+                        const drift = Math.abs(timedVideo.currentTime - primaryAudio.currentTime);
+                        if (drift > 2.0 && !timedVideo.ended) {
+                            timedVideo.currentTime = primaryAudio.currentTime;
+                        }
+                    }
+                }
             }
-            
-            // Check for timed visual changes
-            checkTimedVisuals();
         }
 
         function startProgressUpdates() {
@@ -3059,123 +3190,18 @@
             
             // Find visual that starts at this timestamp
             const visual = currentNode.visuals.find(v => v.start === timestamp);
-            if (visual && visual.type === 'image') {
+            if (!visual) return;
+            
+            if (visual.type === 'image') {
+                // Switch from timed video to image
+                cleanupTimedVideo();
                 crossfadeToImage(visual.src, currentNode.id);
+            } else if (visual.type === 'video') {
+                // Switch to new timed video
+                cleanupTimedVideo();
+                const video = setupTimedVideo(visual.src, 0, visual.duration || 0, visual.poster);
+                video.play().catch(e => console.log('Interruptible timed video play failed:', e));
             }
-        }
-
-        // Track last shown timed visual to avoid redundant crossfades
-        let lastTimedVisualStart = -1;
-        let timedClipPlaying = false;
-
-        function checkTimedVisuals() {
-            if (!currentNode || !currentNode.visuals || currentNode.visuals.length <= 1) return;
-            
-            // Get the appropriate media element for timing
-            // Use primary audio or video if available, fall back to aux1 for aux-only nodes
-            let media = getActiveMediaElement();
-            const hasPrimary = media && media.src && media.src !== '';
-            const hasAux1 = aux1Audio && aux1Audio.src && aux1Audio.src !== '';
-            
-            if (!hasPrimary && hasAux1) {
-                media = aux1Audio;
-            }
-            
-            if (!media || !media.src || !media.duration) return;
-            
-            const currentTimeMs = media.currentTime * 1000;
-            
-            // Find timed visuals (those with start > 0) - both images and videos
-            const timedVisuals = currentNode.visuals
-                .filter(v => v.start > 0 && (v.type === 'image' || v.type === 'video'))
-                .sort((a, b) => a.start - b.start);
-            
-            if (timedVisuals.length === 0) return;
-            
-            // Find the visual that should be showing right now
-            // A visual is active if: currentTime >= start AND (duration is 0 OR currentTime < start + duration)
-            let activeVisual = null;
-            for (const visual of timedVisuals) {
-                const visualEnd = visual.duration > 0 ? visual.start + visual.duration : Infinity;
-                if (currentTimeMs >= visual.start && currentTimeMs < visualEnd) {
-                    activeVisual = visual;
-                }
-            }
-            
-            if (activeVisual) {
-                // Show timed visual if different from what we're showing
-                if (activeVisual.start !== lastTimedVisualStart) {
-                    console.log('Timed visual triggered:', activeVisual.type, activeVisual.src, 'at', activeVisual.start, 'ms');
-                    
-                    if (activeVisual.type === 'video') {
-                        playTimedClip(activeVisual.src);
-                    } else {
-                        stopTimedClip();
-                        crossfadeToImage(activeVisual.src, currentNode.id);
-                    }
-                    lastTimedVisualStart = activeVisual.start;
-                }
-            } else {
-                // No timed visual is active - show the default (first) image if we were showing a timed one
-                if (lastTimedVisualStart > 0) {
-                    stopTimedClip();
-                    const defaultVisual = currentNode.visuals.find(v => v.start === 0 && v.type === 'image');
-                    if (defaultVisual) {
-                        console.log('Timed visual duration ended, reverting to default:', defaultVisual.src);
-                        crossfadeToImage(defaultVisual.src, currentNode.id);
-                        lastTimedVisualStart = 0;
-                    }
-                }
-            }
-        }
-
-        function playTimedClip(src) {
-            if (!timedClipVideo) return;
-            
-            const resolvedSrc = resolveMediaUrl(src);
-            timedClipVideo.src = resolvedSrc;
-            timedClipVideo.muted = true;
-            timedClipVideo.currentTime = 0;
-            timedClipVideo.style.display = 'block';
-            
-            // Fade in the video
-            timedClipVideo.style.transition = 'opacity 0.4s ease-in-out';
-            timedClipVideo.style.opacity = '0';
-            
-            timedClipVideo.play().then(() => {
-                timedClipPlaying = true;
-                // Fade in after play starts
-                requestAnimationFrame(() => {
-                    timedClipVideo.style.opacity = '1';
-                });
-            }).catch(e => {
-                console.log('Timed clip play failed:', e);
-            });
-            
-            console.log('Timed clip started:', src);
-        }
-
-        function stopTimedClip() {
-            if (!timedClipVideo || !timedClipPlaying) return;
-            
-            // Fade out
-            timedClipVideo.style.transition = 'opacity 0.4s ease-in-out';
-            timedClipVideo.style.opacity = '0';
-            
-            // After fade, stop and hide
-            setTimeout(() => {
-                timedClipVideo.pause();
-                timedClipVideo.src = '';
-                timedClipVideo.style.display = 'none';
-                timedClipPlaying = false;
-            }, 400);
-            
-            console.log('Timed clip stopped');
-        }
-
-        function resetTimedVisualState() {
-            lastTimedVisualStart = -1;
-            stopTimedClip();
         }
 
         // Scrub on click (works for both audio and video)
@@ -3193,29 +3219,18 @@
             const percent = clickX / rect.width;
             const seekTime = percent * media.duration;
             media.currentTime = seekTime;
+            
+            // Directly sync timed video if present
+            if (timedVideo && timedVideo.parentNode) {
+                timedVideo.currentTime = seekTime;
+            }
+            
             updateProgressBar();
             
-            // After seeking, check interruptibles and timed visuals (with small delay for audio to settle)
-            // This catches any choices/visuals at timestamps we scrubbed past
+            // After seeking, check interruptibles
             if (!videoState) {
                 setTimeout(() => {
                     checkInterruptibles();
-                    // Also update the visual for the most recent interruptible we passed
-                    if (currentNode?.interruptible) {
-                        // Find the latest interruptible we should have passed
-                        const seekTimeMs = seekTime * 1000;
-                        const passedInterruptibles = currentNode.interruptible
-                            .filter(c => c.time <= seekTimeMs)
-                            .sort((a, b) => b.time - a.time); // Sort descending
-                        
-                        if (passedInterruptibles.length > 0) {
-                            const latest = passedInterruptibles[0];
-                            showInterruptibleVisual(latest.time);
-                        }
-                    }
-                    
-                    // Check for timed visuals we scrubbed past
-                    checkTimedVisuals();
                 }, 50);
             }
         });
@@ -3342,9 +3357,8 @@
                 if (!response.ok) throw new Error('Failed to load manifest.json');
                 manifest = await response.json();
                 perfOverrides = manifest.perfOverrides || {};
-                mediaBase = manifest.terrain.mediaBase || '';
                 PerfMonitor.end('manifest-load', `${manifest.nodes?.length || 0} nodes`);
-                console.log('Manifest loaded:', manifest.terrain.title, mediaBase ? `(media: ${mediaBase})` : '(local media)');
+                console.log('Manifest loaded:', manifest.terrain.title);
                 
                 // Preload home node into persistent cache (never evicted)
                 preloadHomeNode();
@@ -3404,7 +3418,6 @@
             Timers.clearAll();
 
             activeInterruptibles = [];
-            resetTimedVisualState();
             stopProgressUpdates();
             clearProgressBar();
 
@@ -3427,6 +3440,9 @@
             // Teardown video if active
             teardownVideo();
 
+            // Cleanup timed video if active
+            cleanupTimedVideo();
+
             // Reset carousel state for next node
             hideCarousel();
         }
@@ -3441,11 +3457,11 @@
                 
                 // Show start poster image
                 if (node.video.poster) {
-                    crossfadeToImage(resolveMediaUrl(node.video.poster), node.id);
+                    crossfadeToImage(node.video.poster, node.id);
                 }
                 
                 // Preload video (muted until user starts it)
-                viewportVideo.src = resolveMediaUrl(node.video.src);
+                viewportVideo.src = node.video.src;
                 viewportVideo.muted = true;
                 viewportVideo.load();
                 
@@ -3478,15 +3494,12 @@
                     if (visual.type === 'image') {
                         crossfadeToImage(visual.src, node.id);
                     } else if (visual.type === 'video') {
-                        viewport.innerHTML = '';
-                        const video = document.createElement('video');
-                        video.src = visual.src;
-                        video.autoplay = true;
-                        video.controls = false;
-                        video.playsInline = true;
-                        video.muted = true;
-                        viewport.appendChild(video);
+                        // Use timed video system (synced to primary audio)
+                        setupTimedVideo(visual.src, visual.start || 0, visual.duration || 0, visual.poster);
                     }
+                    
+                    // Schedule any additional timed visuals (start > 0)
+                    scheduleTimedVisuals(node);
                 }
             }
 
@@ -3511,14 +3524,14 @@
                     audioFile = selectBundleFile(node.audio.files, node.audio.mode, node.id);
                 } else if (node.audio.type === 'playlist' && node.audio.source) {
                     isPlaylist = true;
-                    loadPlaylist(node.id, resolveMediaUrl(node.audio.source), versionAtEnter);
+                    loadPlaylist(node.id, node.audio.source, versionAtEnter);
                 } else if (node.audio.primary) {
                     audioFile = node.audio.primary;
                 }
 
                 if (audioFile && !isPlaylist) {
                     PerfMonitor.start('audio-load-' + node.id);
-                    primaryAudio.src = resolveMediaUrl(audioFile);
+                    primaryAudio.src = audioFile;
                     primaryAudio.loop = false;
                     
                     // Track audio load time
@@ -3544,6 +3557,11 @@
                     const startPrimary = withNavGuard(() => {
                         primaryAudio.play().catch(e => console.log('Audio autoplay prevented:', e));
                         startProgressUpdates();
+                        // Also start timed video if present - ensure it's synced to audio start
+                        if (timedVideo && timedVideo.parentNode) {
+                            timedVideo.currentTime = 0;
+                            timedVideo.play().catch(e => console.log('Timed video play failed:', e));
+                        }
                     }, versionAtEnter);
 
                     if (timingDelay > 0) Timers.setTimeout(startPrimary, timingDelay);
@@ -3561,12 +3579,12 @@
                 aux1CrossfadeAudio.pause();
                 aux1CrossfadeAudio.src = '';
 
-                aux1Audio.src = resolveMediaUrl(node.audio.aux1);
+                aux1Audio.src = node.audio.aux1;
                 const crossfadeDuration = node.audio.aux1Crossfade || 0;
 
                 if (crossfadeDuration > 0) {
                     aux1Audio.loop = false;
-                    setupAux1Crossfade(resolveMediaUrl(node.audio.aux1), crossfadeDuration);
+                    setupAux1Crossfade(node.audio.aux1, crossfadeDuration);
                 } else {
                     aux1Audio.loop = true;
                 }
@@ -3774,7 +3792,7 @@
                 transitionAudio.ontimeupdate = null;
                 
                 // Set up the new transition
-                transitionAudio.src = resolveMediaUrl(transitionAudioFile);
+                transitionAudio.src = transitionAudioFile;
                 
                 // Apply volume adjustment if specified
                 const volumeAdjustment = transition.volume || 0;
@@ -4020,24 +4038,9 @@
             const media = getActiveMediaElement();
             const hasPrimary = !!(media && media.src && media.src !== '');
             const hasAux1 = !!(aux1Audio && aux1Audio.src && aux1Audio.src !== '');
-            const hasVideo = isVideoActive() || videoState === 'ready';
-            
-            // Aux-only nodes: disable the pause button (aux is ambient, not controllable)
-            if (!hasPrimary && !hasVideo && hasAux1) {
-                btn.classList.add('disabled');
-                btn.style.opacity = '0.3';
-                btn.style.pointerEvents = 'none';
-                setBtnIcon(btn, iconPause(), 'Pause');
-                return;
-            }
-            
-            // Re-enable button if it was previously disabled
-            btn.classList.remove('disabled');
-            btn.style.opacity = '';
-            btn.style.pointerEvents = '';
             
             // User preference: on init (nothing loaded yet), show PAUSE (not PLAY)
-            if (forceDefaultPause || (!hasPrimary && !hasAux1 && !hasVideo)) {
+            if (forceDefaultPause || (!hasPrimary && !hasAux1)) {
                 setBtnIcon(btn, iconPause(), 'Pause');
                 return;
             }
@@ -4046,8 +4049,8 @@
             let isPaused;
             if (hasPrimary) {
                 isPaused = media.paused;
-            } else if (hasVideo) {
-                isPaused = viewportVideo.paused;
+            } else if (hasAux1) {
+                isPaused = aux1Audio.paused;
             } else {
                 isPaused = true;
             }
@@ -4157,6 +4160,10 @@
                                 primaryAudio.play().catch(e => console.log('Resume failed:', e));
                                 startProgressUpdates();
                                 console.log(`Resumed at ${resumeTime}s (bookmark: ${bookmark.timestamp}s, pre-roll: ${preroll}ms)`);
+                                
+                                // Sync timed video to the resume position
+                                const resumeTimeMs = resumeTime * 1000;
+                                showTimedVisualAtTime(resumeTimeMs);
                             }
                         }, resumeVersion), 100);
                     };
@@ -4210,13 +4217,10 @@
             } else if (key === 'prev') {
                 // Restart from beginning
                 if (isVideoActive()) {
-                    // Restart video
+                    // Restart standalone video node
                     restartVideo();
                 } else {
                     // Restart main audio (doesn't affect background)
-                    console.log('Prev pressed. primaryAudio.src:', primaryAudio.src, 'currentNode:', currentNode?.id);
-                    
-                    // Check if audio is in error state or needs reload
                     const needsReload = !primaryAudio.src || 
                                         primaryAudio.src === '' || 
                                         primaryAudio.error ||
@@ -4224,8 +4228,7 @@
                     
                     if (needsReload && currentNode?.audio?.primary) {
                         // Audio element is in bad state, reload it
-                        console.log('Audio needs reload, reloading from node');
-                        primaryAudio.src = resolveMediaUrl(currentNode.audio.primary);
+                        primaryAudio.src = currentNode.audio.primary;
                         primaryAudio.load();
                         primaryAudio.currentTime = 0;
                         primaryAudio.play().catch(e => console.log('Audio play failed:', e));
@@ -4235,11 +4238,16 @@
                         primaryAudio.play().catch(e => console.log('Audio play failed:', e));
                         startProgressUpdates();
                     }
+                    // Also restart timed video if present
+                    if (timedVideo && timedVideo.parentNode) {
+                        timedVideo.currentTime = 0;
+                        timedVideo.play().catch(() => {});
+                    }
                 }
             } else if (key === 'pause') {
                 // Toggle pause/play
                 if (isVideoActive()) {
-                    // Toggle video pause
+                    // Toggle standalone video node pause
                     if (viewportVideo.paused) {
                         viewportVideo.play();
                         videoState = 'playing';
@@ -4250,25 +4258,50 @@
                         stopProgressUpdates();
                     }
                 } else {
-                    // Toggle audio pause
+                    // Toggle audio pause (and timed video if present)
                     const hasPrimary = primaryAudio.src && primaryAudio.src !== '';
                     const hasAux1 = aux1Audio.src && aux1Audio.src !== '';
-                    
-                    // Aux-only nodes: pause is disabled, ignore the key
-                    if (!hasPrimary && hasAux1) {
-                        return;
-                    }
+                    // Check timedVideo exists and is in the DOM (not cleaned up)
+                    const hasTimedVideo = timedVideo && timedVideo.parentNode;
                     
                     if (hasPrimary) {
-                        // Primary audio exists - toggle it (and aux1 follows)
+                        // Primary audio exists - toggle it (and aux1 + timed video follow)
                         if (primaryAudio.paused) {
+                            // RESUMING: Just play everything - they paused together so they're in sync
+                            // Don't force currentTime sync unless there's significant drift
                             primaryAudio.play();
                             if (hasAux1) aux1Audio.play();
+                            if (hasTimedVideo && !timedVideo.ended) {
+                                // Only sync if drift > 0.5s, otherwise just play
+                                const drift = Math.abs(timedVideo.currentTime - primaryAudio.currentTime);
+                                if (drift > 0.5) {
+                                    timedVideo.currentTime = primaryAudio.currentTime;
+                                }
+                                timedVideo.play().catch(e => console.log('Timed video resume failed:', e));
+                            }
                             startProgressUpdates();
                         } else {
+                            // PAUSING: Pause everything together
                             primaryAudio.pause();
                             aux1Audio.pause();
+                            if (hasTimedVideo) {
+                                timedVideo.pause();
+                            }
                             stopProgressUpdates();
+                        }
+                    } else if (hasAux1) {
+                        // Aux1 only - toggle just aux1 (and timed video if present)
+                        if (aux1Audio.paused) {
+                            if (hasTimedVideo && !timedVideo.ended) {
+                                timedVideo.currentTime = 0; // No audio reference, start from beginning
+                                timedVideo.play().catch(e => console.log('Timed video resume failed:', e));
+                            }
+                            aux1Audio.play().catch(e => console.log('Aux1 resume failed:', e));
+                        } else {
+                            aux1Audio.pause();
+                            if (hasTimedVideo) {
+                                timedVideo.pause();
+                            }
                         }
                     }
                 }
@@ -4277,7 +4310,12 @@
                 // Fast forward - skip ahead 10 seconds
                 const media = getActiveMediaElement();
                 if (media.src) {
-                    media.currentTime = Math.min(media.duration, media.currentTime + 10);
+                    const newTime = Math.min(media.duration, media.currentTime + 10);
+                    media.currentTime = newTime;
+                    // Sync timed video if present
+                    if (timedVideo && timedVideo.parentNode) {
+                        timedVideo.currentTime = newTime;
+                    }
                     updateProgressBar();
                 }
             } else if (key === '#') {
@@ -4922,6 +4960,7 @@ src: ${pa.src ? pa.src.split('/').slice(-2).join('/') : '(empty)'}`;
         }
         
         // Performance monitoring help
+        console.log('%c🎬 Terrain v2.3 - Timed Video Support', 'color: #4CAF50; font-weight: bold; font-size: 14px');
         console.log('%c📊 Terrain Performance Monitor Active', 'color: #4CAF50; font-weight: bold; font-size: 14px');
         console.log('%cCommands available in console:', 'color: #888');
         console.log('  PerfMonitor.summary()  - Show performance summary');
