@@ -179,7 +179,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.95);
+            background: rgba(0, 0, 0, 0.80);
             z-index: 1000;
             display: none;
             overflow-y: auto;
@@ -195,9 +195,11 @@
         .navigator-container {
             max-width: 900px;
             margin: 0 auto;
-            background: var(--bg-panel);
+            background: rgba(42, 42, 42, 0.95);
             border-radius: 8px;
             padding: 30px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
         }
 
         .navigator-header {
