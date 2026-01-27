@@ -1056,7 +1056,7 @@
     {
       "id": "1000.2",
       "title": "Video Node Test",
-      "type": "destination",
+      "type": "connection",
       "audio": {
         "primary": "assets/video/1000/1000.2.mp3"
       },
@@ -1100,7 +1100,7 @@
       "interruptible": [],
       "links": [],
       "tags": [],
-      "autoNext": "0000.1",
+      "autoNext": "",
       "preload": true
     },
     {
