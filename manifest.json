@@ -1056,10 +1056,8 @@
     {
       "id": "1000.2",
       "title": "Video Node Test",
-      "type": "destination",
-      "audio": {
-        "primary": "assets/video/1000/1000.2.mp3"
-      },
+      "type": "connection",
+      "audio": {},
       "transition": {
         "type": "bundle",
         "timing": 0,
@@ -1079,7 +1077,7 @@
       "visuals": [
         {
           "type": "video",
-          "src": "assets/video/1000/1000.2.mp4",
+          "src": "",
           "start": 0,
           "duration": 0
         }
@@ -1094,8 +1092,13 @@
       "interruptible": [],
       "links": [],
       "tags": [],
-      "autoNext": "0001.2",
-      "preload": true
+      "autoNext": "",
+      "preload": true,
+      "video": {
+        "src": "assets/video/1000/1000.2.mp4",
+        "poster": "assets/video/1000/1000.2-1.jpg",
+        "endPoster": "assets/video/1000/1000.2-2.jpg"
+      }
     },
     {
       "id": "0001.11",
@@ -1209,6 +1212,50 @@
       "links": [],
       "tags": [],
       "autoNext": "0000.1"
+    },
+    {
+      "id": "1000.3",
+      "title": "Video Node Test (Copy)",
+      "type": "destination",
+      "audio": {
+        "primary": "assets/video/1000/1000.2.mp3"
+      },
+      "transition": {
+        "type": "bundle",
+        "timing": 0,
+        "volume": 0,
+        "files": [
+          "assets/audio/transitions/bundle-001/1-F2.mp3",
+          "assets/audio/transitions/bundle-001/2-G2.mp3",
+          "assets/audio/transitions/bundle-001/3-A2.mp3",
+          "assets/audio/transitions/bundle-001/4-B2.mp3",
+          "assets/audio/transitions/bundle-001/5-C3.mp3",
+          "assets/audio/transitions/bundle-001/6-D3.mp3",
+          "assets/audio/transitions/bundle-001/7-E3.mp3",
+          "assets/audio/transitions/bundle-001/8-F3.mp3"
+        ],
+        "mode": "random_tracked"
+      },
+      "visuals": [
+        {
+          "type": "video",
+          "src": "assets/video/1000/1000.2.mp4",
+          "start": 0,
+          "duration": 0
+        }
+      ],
+      "choices": [
+        {
+          "key": "1",
+          "label": "0001.1",
+          "target": "0001.1"
+        }
+      ],
+      "interruptible": [],
+      "links": [],
+      "tags": [],
+      "autoNext": "0001.2",
+      "preload": true
     }
   ]
 }
