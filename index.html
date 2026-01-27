@@ -2089,6 +2089,8 @@
         }
 
         // Session navigation history (for RTN-as-Back)
+        // Capped at 100 entries to prevent unbounded growth in long sessions
+        const MAX_SESSION_HISTORY = 100;
         let sessionHistory = [];
         let suppressNextHistoryPush = false;
 
@@ -2099,7 +2101,13 @@
                 return;
             }
             const last = sessionHistory.length ? sessionHistory[sessionHistory.length - 1] : null;
-            if (last !== nodeId) sessionHistory.push(nodeId);
+            if (last !== nodeId) {
+                sessionHistory.push(nodeId);
+                // Trim oldest entries if over limit
+                if (sessionHistory.length > MAX_SESSION_HISTORY) {
+                    sessionHistory = sessionHistory.slice(-MAX_SESSION_HISTORY);
+                }
+            }
         }
 
         function canGoBackInHistory() {
@@ -2574,6 +2582,9 @@
             }
         }
 
+        // Cap session journey to prevent unbounded growth (this is visible in UI)
+        const MAX_SESSION_JOURNEY = 200;
+        
         function addToNavigator(node) {
             if (!node) return;
             
@@ -2586,6 +2597,11 @@
                 type: node.type,
                 timestamp: timestamp
             });
+            
+            // Trim oldest entries if over limit
+            if (navigatorState.sessionJourney.length > MAX_SESSION_JOURNEY) {
+                navigatorState.sessionJourney = navigatorState.sessionJourney.slice(-MAX_SESSION_JOURNEY);
+            }
             
             // Add to persistent index if connection or destination (and indexable)
             if ((node.type === 'connection' || node.type === 'destination') && node.indexable !== false) {
@@ -2758,13 +2774,34 @@
         const viewportVideo = document.getElementById('viewportVideo');
 
         // ===========================================
-        // VIDEO NODE STATE
+        // VIDEO SYSTEMS OVERVIEW
+        // ===========================================
+        // Terrain supports TWO independent video playback systems:
+        //
+        // 1. VIDEO NODES (node.video.src) - "Baked-in audio"
+        //    - Use when: Video has its own audio track, user controls playback
+        //    - Element: viewportVideo (persistent, hidden when not in use)
+        //    - State: videoState tracks ready/playing/paused/ended
+        //    - Features: start poster, end poster, GO key to start
+        //    - Cleanup: teardownVideo()
+        //
+        // 2. TIMED VIDEO (visuals[].type === 'video') - "Split A/V"
+        //    - Use when: Video syncs to separate primaryAudio track
+        //    - Element: timedVideo (created dynamically, removed on cleanup)
+        //    - State: timedVideo reference, timedVideoScheduled timers
+        //    - Features: auto-sync to audio, scheduled visual switches
+        //    - Cleanup: cleanupTimedVideo()
+        //
+        // These systems are mutually exclusive per node but coexist in the codebase.
+
+        // ===========================================
+        // VIDEO NODE STATE (baked-in audio)
         // ===========================================
         // States: null (no video), 'ready', 'playing', 'paused', 'ended'
         let videoState = null;
 
         // ===========================================
-        // TIMED VIDEO STATE (video in visuals array synced to primary audio)
+        // TIMED VIDEO STATE (synced to primary audio)
         // ===========================================
         let timedVideo = null;  // Reference to active timed video element
         let timedVideoScheduled = [];  // Scheduled timed video switches
@@ -2793,9 +2830,28 @@
                 }
             });
 
-            // Log errors only
+            // Error recovery - fall back to poster or node image if video fails
             video.addEventListener('error', (e) => {
                 console.error('Timed video error:', video.error?.message || e);
+                
+                // Try to show fallback image instead of broken video
+                if (timedVideo === video && currentNode) {
+                    let fallbackSrc = posterSrc;  // Try poster first
+                    
+                    // If no poster, try the node's first image
+                    if (!fallbackSrc && currentNode.visuals?.length > 0) {
+                        const firstVisual = currentNode.visuals.find(v => v.type === 'image');
+                        if (firstVisual) {
+                            fallbackSrc = firstVisual.src;
+                        }
+                    }
+                    
+                    if (fallbackSrc) {
+                        console.log('Timed video failed, falling back to image:', fallbackSrc);
+                        cleanupTimedVideo();
+                        crossfadeToImage(fallbackSrc, currentNode.id);
+                    }
+                }
             });
 
             // Add to viewport
@@ -4054,16 +4110,27 @@
                 }, 420);
             };
             
-            // Step 1: Prepare the inactive layer - hidden and below
+            // Step 1: Remove any pending load handlers from previous crossfade calls
+            // This prevents listener accumulation if crossfadeToImage is called rapidly
+            if (inactiveImage._pendingLoadHandler) {
+                inactiveImage.removeEventListener('load', inactiveImage._pendingLoadHandler);
+                inactiveImage._pendingLoadHandler = null;
+            }
+            if (inactiveImage._pendingErrorHandler) {
+                inactiveImage.removeEventListener('error', inactiveImage._pendingErrorHandler);
+                inactiveImage._pendingErrorHandler = null;
+            }
+            
+            // Step 2: Prepare the inactive layer - hidden and below
             inactiveImage.style.transition = 'none';
             inactiveImage.style.opacity = '0';
             inactiveImage.style.zIndex = '0';  // Keep below active layer while loading
             void inactiveImage.offsetWidth;  // Force reflow
             
-            // Step 2: Set the new source on the element
+            // Step 3: Set the new source on the element
             inactiveImage.src = newSrc;
             
-            // Step 3: Wait for image to load on the element before fading in
+            // Step 4: Wait for image to load on the element before fading in
             // This prevents flash of old content - we only raise z-index after new image is ready
             const loadStart = performance.now();
             
@@ -4075,14 +4142,21 @@
                 const onLoad = () => {
                     inactiveImage.removeEventListener('load', onLoad);
                     inactiveImage.removeEventListener('error', onError);
+                    inactiveImage._pendingLoadHandler = null;
+                    inactiveImage._pendingErrorHandler = null;
                     const loadTime = Math.round(performance.now() - loadStart);
                     startFadeIn(loadTime);
                 };
                 const onError = () => {
                     inactiveImage.removeEventListener('load', onLoad);
                     inactiveImage.removeEventListener('error', onError);
+                    inactiveImage._pendingLoadHandler = null;
+                    inactiveImage._pendingErrorHandler = null;
                     PerfMonitor.warn(`Image failed to load: ${newSrc}`);
                 };
+                // Store references so we can remove them if crossfade is called again
+                inactiveImage._pendingLoadHandler = onLoad;
+                inactiveImage._pendingErrorHandler = onError;
                 inactiveImage.addEventListener('load', onLoad);
                 inactiveImage.addEventListener('error', onError);
             }
