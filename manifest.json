@@ -212,11 +212,11 @@
     {
       "id": "0001.1",
       "title": "What is Terrain?",
-      "type": "connection",
+      "type": "destination",
       "audio": {
-        "primary": "assets/audio/nodes/0001.1.mp3",
         "aux1Crossfade": 4000,
-        "aux1Volume": -5
+        "aux1Volume": -5,
+        "primary": "assets/audio/nodes/0001.1.mp3"
       },
       "transition": {
         "type": "bundle",
@@ -239,7 +239,7 @@
           "type": "video",
           "src": "assets/video/0001.1/0001.1.mp4",
           "start": 0,
-          "duration": 141000
+          "duration": 0
         }
       ],
       "choices": [
@@ -265,7 +265,10 @@
       "links": [],
       "tags": [],
       "autoNext": "0000.1",
-      "returnTransition": "assets/audio/transitions/trans-RET-001.mp3"
+      "returnTransition": "assets/audio/transitions/trans-RET-001.mp3",
+      "video": {
+        "endPoster": "assets/video/0001.1/0001.1-2.jpg"
+      }
     },
     {
       "id": "0001.2",

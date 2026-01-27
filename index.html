@@ -24,7 +24,7 @@
            =========================================== */
         :root {
             --bg-main: #242424;
-            --bg-viewport: #1a1a1a;
+            --bg-viewport: #242424;
             --bg-button: #3d5a6c;
             --bg-button-hover: #4a6d82;
             --bg-button-active: #2d4a5c;
@@ -2777,7 +2777,7 @@
             video.playsInline = true;
             video.muted = true;  // Muted because audio comes from primaryAudio
             video.loop = false;
-            video.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1;';
+            video.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 3;';
             
             // Set poster if provided (posters are images, served from Pages)
             if (posterSrc) {
@@ -2809,15 +2809,42 @@
         }
 
         function cleanupTimedVideo() {
+            // Only clean up the video element - don't clear scheduled timers here
+            // Timers are cleared by clearTimedVisualSchedule() when leaving a node
             if (timedVideo) {
                 timedVideo.pause();
-                timedVideo.src = '';
+                
+                // Hide image layers before removing video to prevent flash of old content
+                const imageA = document.getElementById('viewportImageA');
+                const imageB = document.getElementById('viewportImageB');
+                
+                // Disable transitions and hide both layers
+                imageA.style.transition = 'none';
+                imageB.style.transition = 'none';
+                imageA.style.opacity = '0';
+                imageB.style.opacity = '0';
+                
+                // Force reflow on BOTH to ensure opacity is applied
+                void imageA.offsetWidth;
+                void imageB.offsetWidth;
+                
+                // Now remove video - image layers are hidden, showing #242424 background
                 if (timedVideo.parentNode) {
                     timedVideo.parentNode.removeChild(timedVideo);
                 }
+                
+                // Re-enable transitions for the upcoming crossfade
+                imageA.style.transition = '';
+                imageB.style.transition = '';
+                
+                // Clear src
+                timedVideo.src = '';
                 timedVideo = null;
             }
-            // Clear any scheduled video switches
+        }
+        
+        function clearTimedVisualSchedule() {
+            // Clear all scheduled timed visual timers (called when leaving a node)
             timedVideoScheduled.forEach(id => Timers.clearTimeout(id));
             timedVideoScheduled = [];
         }
@@ -2838,32 +2865,94 @@
         }
 
         function scheduleTimedVisuals(node) {
+            // Schedule from timestamp 0 (node entry)
+            scheduleTimedVisualsFrom(0, node);
+        }
+        
+        function scheduleTimedVisualsFrom(fromTimestamp, node) {
             // Clear any existing scheduled visuals
             timedVideoScheduled.forEach(id => Timers.clearTimeout(id));
             timedVideoScheduled = [];
             
-            if (!node.visuals || node.visuals.length <= 1) return;
+            const targetNode = node || currentNode;
+            if (!targetNode?.visuals || targetNode.visuals.length <= 1) {
+                if (fromTimestamp === 0) {
+                    console.log('scheduleTimedVisuals: skipping, visuals count:', targetNode?.visuals?.length || 0);
+                }
+                return;
+            }
             
-            // Schedule visuals with start > 0
-            node.visuals.forEach((visual, index) => {
-                if (index === 0) return;  // First visual already shown
-                if (!visual.start || visual.start <= 0) return;
+            if (fromTimestamp === 0) {
+                console.log('scheduleTimedVisuals: processing', targetNode.visuals.length, 'visuals for node', targetNode.id);
+            }
+            
+            // Schedule visuals based on fromTimestamp
+            targetNode.visuals.forEach((visual, index) => {
+                if (index === 0) return;  // First visual handled as primary
                 
-                const timerId = Timers.setTimeout(() => {
-                    if (visual.type === 'image') {
-                        // Cleanup timed video if switching to image
-                        cleanupTimedVideo();
-                        crossfadeToImage(visual.src, node.id);
-                    } else if (visual.type === 'video') {
-                        // Switch to new timed video
-                        cleanupTimedVideo();
-                        const video = setupTimedVideo(visual.src, 0, visual.duration || 0, visual.poster);
-                        // Start immediately since we're at the scheduled time
-                        video.play().catch(e => console.log('Scheduled timed video play failed:', e));
+                const start = visual.start || 0;
+                const duration = visual.duration || 0;
+                if (start <= 0) return;
+                
+                // Only schedule if the visual's start is in the future relative to fromTimestamp
+                if (start > fromTimestamp) {
+                    const delay = start - fromTimestamp;
+                    
+                    if (fromTimestamp === 0) {
+                        console.log('Scheduling timed visual:', visual.type, 'at', start, 'ms, duration:', duration);
                     }
-                }, visual.start);
-                
-                timedVideoScheduled.push(timerId);
+                    
+                    const timerId = Timers.setTimeout(() => {
+                        console.log('Timed visual timer fired:', visual.type, visual.src);
+                        if (visual.type === 'image') {
+                            // Cleanup timed video if switching to image
+                            cleanupTimedVideo();
+                            crossfadeToImage(visual.src, targetNode.id);
+                            
+                            // Schedule revert to primary visual after duration (images only)
+                            if (duration > 0) {
+                                const revertTimerId = Timers.setTimeout(() => {
+                                    const primary = targetNode.visuals[0];
+                                    if (primary?.type === 'image') {
+                                        crossfadeToImage(primary.src, targetNode.id);
+                                    }
+                                }, duration);
+                                timedVideoScheduled.push(revertTimerId);
+                            }
+                        } else if (visual.type === 'video') {
+                            // Switch to new timed video
+                            cleanupTimedVideo();
+                            const video = setupTimedVideo(visual.src, 0, duration, visual.poster);
+                            // Start immediately since we're at the scheduled time
+                            video.play().catch(e => console.log('Scheduled timed video play failed:', e));
+                        }
+                    }, delay);
+                    
+                    timedVideoScheduled.push(timerId);
+                    
+                    // Also schedule revert if we're scheduling from the future
+                    if (duration > 0) {
+                        const revertDelay = (start + duration) - fromTimestamp;
+                        const revertTimerId = Timers.setTimeout(() => {
+                            const primary = targetNode.visuals[0];
+                            if (primary?.type === 'image') {
+                                crossfadeToImage(primary.src, targetNode.id);
+                            }
+                        }, revertDelay);
+                        timedVideoScheduled.push(revertTimerId);
+                    }
+                }
+                // If we're currently within the visual's duration window, schedule the remaining revert
+                else if (duration > 0 && fromTimestamp >= start && fromTimestamp < start + duration) {
+                    const remainingDuration = (start + duration) - fromTimestamp;
+                    const revertTimerId = Timers.setTimeout(() => {
+                        const primary = targetNode.visuals[0];
+                        if (primary?.type === 'image') {
+                            crossfadeToImage(primary.src, targetNode.id);
+                        }
+                    }, remainingDuration);
+                    timedVideoScheduled.push(revertTimerId);
+                }
             });
         }
 
@@ -2872,9 +2961,18 @@
             if (!currentNode || !currentNode.visuals) return;
             
             // Find the visual that should be active at this timestamp
-            // (latest visual with start <= timestamp)
+            // For images: consider duration (only active within start to start+duration window)
+            // For videos: original logic (latest with start <= timestamp)
             const activeVisual = currentNode.visuals
-                .filter(v => (v.start || 0) <= timestamp)
+                .filter(v => {
+                    const start = v.start || 0;
+                    if (timestamp < start) return false;  // Hasn't started yet
+                    // For images with duration, check if still within window
+                    if (v.type === 'image' && v.duration && v.duration > 0) {
+                        return timestamp < start + v.duration;
+                    }
+                    return true;  // Videos and images without duration
+                })
                 .sort((a, b) => (b.start || 0) - (a.start || 0))[0];
             
             if (activeVisual) {
@@ -2900,6 +2998,9 @@
                     }
                 }
             }
+            
+            // Reschedule timed visual timers from the new position
+            scheduleTimedVisualsFrom(timestamp);
         }
 
         function getActiveMediaElement() {
@@ -2917,12 +3018,17 @@
         function startVideo() {
             if (!currentNode?.video || !viewportVideo) return;
             viewportVideo.style.display = 'block';
-            viewportVideo.muted = false;
-            viewportVideo.play().catch(e => console.log('Video play failed:', e));
+            // Start muted (allowed by autoplay policies), then unmute after play succeeds
+            viewportVideo.muted = true;
+            viewportVideo.play()
+                .then(() => {
+                    viewportVideo.muted = false;  // Unmute after play starts
+                    console.log('Video started and unmuted');
+                })
+                .catch(e => console.log('Video play failed:', e));
             videoState = 'playing';
             startProgressUpdates();
             updatePauseIcon();
-            console.log('Video started');
         }
 
         function restartVideo() {
@@ -2931,17 +3037,22 @@
             if (videoState === 'ended') {
                 // Restart from ended state
                 viewportVideo.style.display = 'block';
-                viewportVideo.play().catch(e => console.log('Video replay failed:', e));
+                viewportVideo.muted = true;
+                viewportVideo.play()
+                    .then(() => {
+                        viewportVideo.muted = false;
+                        console.log('Video restarted and unmuted');
+                    })
+                    .catch(e => console.log('Video replay failed:', e));
                 videoState = 'playing';
                 startProgressUpdates();
             } else if (videoState === 'playing' || videoState === 'paused') {
-                // Just restart from beginning
+                // Just restart from beginning - video already unmuted
                 viewportVideo.play().catch(e => console.log('Video restart failed:', e));
                 videoState = 'playing';
                 startProgressUpdates();
             }
             updatePauseIcon();
-            console.log('Video restarted');
         }
 
         function setupVideoEndHandler() {
@@ -3253,6 +3364,9 @@
             // Directly sync timed video if present
             if (timedVideo && timedVideo.parentNode) {
                 timedVideo.currentTime = seekTime;
+            } else if (!videoState && currentNode?.visuals?.length > 1) {
+                // No timed video - check if we need to update timed images
+                showTimedVisualAtTime(seekTime * 1000);
             }
             
             updateProgressBar();
@@ -3471,8 +3585,9 @@
             // Teardown video if active
             teardownVideo();
 
-            // Cleanup timed video if active
+            // Cleanup timed video and scheduled visual timers
             cleanupTimedVideo();
+            clearTimedVisualSchedule();
 
             // Reset carousel state for next node
             hideCarousel();
@@ -3911,55 +4026,64 @@
             const activeImage = imageA.classList.contains('active') ? imageA : imageB;
             const inactiveImage = activeImage === imageA ? imageB : imageA;
             
-            // Function to apply the crossfade once image is ready
-            const applyImage = (loadTime) => {
+            // Function to start the fade-in AFTER image is fully loaded on the element
+            const startFadeIn = (loadTime) => {
                 if (loadTime > 100) {
                     PerfMonitor.warn(`Image load took ${loadTime}ms: ${newSrc.split('/').pop()}`);
                 }
                 
-                // Set new image source on inactive layer
-                inactiveImage.src = newSrc;
-                
-                // Position new image on top (z-index 2) but invisible
+                // Image is now loaded on the element - safe to bring it on top and fade in
                 inactiveImage.style.zIndex = '2';
-                inactiveImage.style.opacity = '0';
                 
-                // Force reflow to ensure opacity 0 is applied before transition
+                // Force reflow before enabling transition
                 void inactiveImage.offsetWidth;
                 
-                // Fade IN new image (old image stays fully visible underneath)
+                // Re-enable transition and fade IN
+                inactiveImage.style.transition = '';
                 inactiveImage.style.opacity = '1';
                 
                 // After transition completes, swap active state and reset z-index
                 setTimeout(() => {
                     activeImage.classList.remove('active');
-                    activeImage.style.opacity = '0';
                     activeImage.style.zIndex = '';
                     
                     inactiveImage.classList.add('active');
                     inactiveImage.style.zIndex = '';
                     PerfMonitor.end('crossfade-' + newSrc.split('/').pop());
-                }, 420); // Slightly longer than 400ms transition
+                }, 420);
             };
             
-            // Check cache first if nodeId provided
-            const cachedImg = nodeId ? getCachedImage(nodeId, newSrc) : null;
+            // Step 1: Prepare the inactive layer - hidden and below
+            inactiveImage.style.transition = 'none';
+            inactiveImage.style.opacity = '0';
+            inactiveImage.style.zIndex = '0';  // Keep below active layer while loading
+            void inactiveImage.offsetWidth;  // Force reflow
             
-            if (cachedImg) {
-                // Use cached image - instant!
-                applyImage(0);
+            // Step 2: Set the new source on the element
+            inactiveImage.src = newSrc;
+            
+            // Step 3: Wait for image to load on the element before fading in
+            // This prevents flash of old content - we only raise z-index after new image is ready
+            const loadStart = performance.now();
+            
+            if (inactiveImage.complete && inactiveImage.naturalWidth > 0) {
+                // Image already loaded (browser cache hit)
+                startFadeIn(0);
             } else {
-                // Load fresh
-                const loadStart = performance.now();
-                const tempImg = new Image();
-                tempImg.onload = () => {
+                // Wait for load event
+                const onLoad = () => {
+                    inactiveImage.removeEventListener('load', onLoad);
+                    inactiveImage.removeEventListener('error', onError);
                     const loadTime = Math.round(performance.now() - loadStart);
-                    applyImage(loadTime);
+                    startFadeIn(loadTime);
                 };
-                tempImg.onerror = () => {
+                const onError = () => {
+                    inactiveImage.removeEventListener('load', onLoad);
+                    inactiveImage.removeEventListener('error', onError);
                     PerfMonitor.warn(`Image failed to load: ${newSrc}`);
                 };
-                tempImg.src = newSrc;
+                inactiveImage.addEventListener('load', onLoad);
+                inactiveImage.addEventListener('error', onError);
             }
         }
 
@@ -4347,6 +4471,9 @@
                     // Sync timed video if present
                     if (timedVideo && timedVideo.parentNode) {
                         timedVideo.currentTime = newTime;
+                    } else if (!videoState && currentNode?.visuals?.length > 1) {
+                        // No timed video - check if we need to update timed images
+                        showTimedVisualAtTime(newTime * 1000);
                     }
                     updateProgressBar();
                 }
