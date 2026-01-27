@@ -1971,7 +1971,8 @@
             } else if (node.visuals && node.visuals.length > 0 && node.visuals[0].type === 'image') {
                 imageSrc = node.visuals[0].src;
             } else if (node.video && node.video.poster) {
-                imageSrc = node.video.poster;
+                // Video posters may be on R2 with video files - resolve URL
+                imageSrc = resolveMediaUrl(node.video.poster);
             }
             
             if (imageSrc) {
@@ -3064,7 +3065,7 @@
                 // Start crossfade BEFORE hiding video, so end poster appears underneath
                 const endPoster = currentNode.video.endPoster || currentNode.video.poster;
                 if (endPoster) {
-                    crossfadeToImage(endPoster, currentNode.id);
+                    crossfadeToImage(resolveMediaUrl(endPoster), currentNode.id);
                     // Hide video after crossfade completes (400ms transition + small buffer)
                     setTimeout(() => {
                         viewportVideo.style.display = 'none';
@@ -3601,9 +3602,9 @@
             if (node.video && node.video.src) {
                 console.log('Preparing video node:', node.id);
                 
-                // Show start poster image
+                // Show start poster image (resolve URL - posters may be on R2 with videos)
                 if (node.video.poster) {
-                    crossfadeToImage(node.video.poster, node.id);
+                    crossfadeToImage(resolveMediaUrl(node.video.poster), node.id);
                 }
                 
                 // Preload video (muted until user starts it)
