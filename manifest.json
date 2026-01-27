@@ -1087,7 +1087,7 @@
           "type": "image",
           "src": "assets/video/1000/1000.2-2.jpg",
           "start": 64001,
-          "duration": 0
+          "duration": 60000
         }
       ],
       "choices": [
