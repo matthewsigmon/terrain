@@ -1105,8 +1105,8 @@
       "title": "Pioneer Visual Editor",
       "type": "connection",
       "audio": {
-        "aux1": "assets/audio/nodes/0001.11.mp3",
-        "aux1Crossfade": 4000
+        "aux1Crossfade": 4000,
+        "primary": "assets/audio/nodes/0001.11.mp3"
       },
       "transition": {
         "type": "bundle",
@@ -1126,10 +1126,10 @@
       },
       "visuals": [
         {
-          "type": "image",
-          "src": "assets/images/nodes/0001.11.jpg",
+          "type": "video",
+          "src": "assets/video/0001.1/0001.11.mp4",
           "start": 0,
-          "duration": 0
+          "duration": 92000
         }
       ],
       "choices": [],

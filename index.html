@@ -2834,7 +2834,12 @@
 
             // Error recovery - fall back to poster or node image if video fails
             video.addEventListener('error', (e) => {
-                console.error('Timed video error:', video.error?.message || e);
+                // Ignore errors from cleaned-up videos (stale error events)
+                if (video._cleaned) {
+                    return;
+                }
+                
+                console.error('Timed video error:', video.error?.message || e, 'src:', video.src);
                 
                 // Try to show fallback image instead of broken video
                 if (timedVideo === video && currentNode) {
@@ -2872,6 +2877,9 @@
             // Timers are cleared by clearTimedVisualSchedule() when leaving a node
             if (timedVideo) {
                 timedVideo.pause();
+                
+                // Mark as cleaned up to prevent error handler from acting on stale video
+                timedVideo._cleaned = true;
                 
                 // Hide image layers before removing video to prevent flash of old content
                 const imageA = document.getElementById('viewportImageA');
