@@ -1056,7 +1056,7 @@
     {
       "id": "1000.2",
       "title": "Video Node Test",
-      "type": "connection",
+      "type": "destination",
       "audio": {
         "primary": "assets/video/1000/1000.2.mp3"
       },
@@ -1082,12 +1082,6 @@
           "src": "assets/video/1000/1000.2.mp4",
           "start": 0,
           "duration": 64000
-        },
-        {
-          "type": "image",
-          "src": "assets/video/1000/1000.2-2.jpg",
-          "start": 64001,
-          "duration": 60000
         }
       ],
       "choices": [
@@ -1100,7 +1094,7 @@
       "interruptible": [],
       "links": [],
       "tags": [],
-      "autoNext": "",
+      "autoNext": "0001.2",
       "preload": true
     },
     {
