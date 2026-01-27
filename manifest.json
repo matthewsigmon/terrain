@@ -1057,7 +1057,9 @@
       "id": "1000.2",
       "title": "Video Node Test",
       "type": "destination",
-      "audio": {},
+      "audio": {
+        "primary": "assets/video/1000/1000.2.mp3"
+      },
       "transition": {
         "type": "bundle",
         "timing": 0,
@@ -1074,7 +1076,20 @@
         ],
         "mode": "random_tracked"
       },
-      "visuals": [],
+      "visuals": [
+        {
+          "type": "video",
+          "src": "assets/video/1000/1000.2.mp4",
+          "start": 0,
+          "duration": 64000
+        },
+        {
+          "type": "image",
+          "src": "assets/video/1000/1000.2-2.jpg",
+          "start": 64001,
+          "duration": 0
+        }
+      ],
       "choices": [
         {
           "key": "1",
@@ -1085,11 +1100,6 @@
       "interruptible": [],
       "links": [],
       "tags": [],
-      "video": {
-        "src": "assets/video/1000/1000.2.mp4",
-        "poster": "assets/video/1000/1000.2-1.jpg",
-        "endPoster": "assets/video/1000/1000.2-2.jpg"
-      },
       "autoNext": "0000.1",
       "preload": true
     },
