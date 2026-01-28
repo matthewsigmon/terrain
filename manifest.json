@@ -275,7 +275,8 @@
       "title": "Art Portfolio Example",
       "type": "connection",
       "audio": {
-        "primary": "assets/audio/nodes/0001.2.mp3"
+        "aux1": "assets/audio/nodes/00001.2-1.mp3",
+        "aux1Crossfade": 6000
       },
       "transition": {
         "audio": "assets/audio/transitions/transition-002.mp3",
@@ -1055,7 +1056,7 @@
     },
     {
       "id": "1000.2",
-      "title": "Video Node Test",
+      "title": "Self-Inflections Video",
       "type": "connection",
       "audio": {},
       "transition": {
