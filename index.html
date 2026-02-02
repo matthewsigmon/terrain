@@ -1602,7 +1602,9 @@
                                        placeholder="Search titles..." 
                                        oninput="renderPersistentIndex()">
                             </div>
-                            <button class="export-btn" onclick="exportNavigatorIndex()">Export Index</button>
+                            <button class="export-btn" onclick="exportNavigatorIndex()">Export</button>
+                            <button class="export-btn" onclick="importNavigatorIndex()">Import</button>
+                            <input type="file" id="importIndexFile" accept=".json" style="display: none;" onchange="handleIndexFileImport(event)">
                         </div>
 
                         <!-- Index List -->
@@ -1970,9 +1972,16 @@
             let imageSrc = null;
             if (node.images && node.images.length > 0) {
                 imageSrc = typeof node.images[0] === 'string' ? node.images[0] : node.images[0].src;
-            } else if (node.visuals && node.visuals.length > 0 && node.visuals[0].type === 'image') {
-                imageSrc = node.visuals[0].src;
-            } else if (node.video && node.video.poster) {
+            } else if (node.visuals && node.visuals.length > 0) {
+                const visual = node.visuals[0];
+                if (visual.type === 'image') {
+                    imageSrc = visual.src;
+                } else if (visual.type === 'image_bundle' && visual.files?.length > 0) {
+                    // Preload first image from bundle (can't predict selection)
+                    imageSrc = visual.files[0];
+                }
+            }
+            if (!imageSrc && node.video && node.video.poster) {
                 // Video posters may be on R2 with video files - resolve URL
                 imageSrc = resolveMediaUrl(node.video.poster);
             }
@@ -2503,10 +2512,13 @@
             
             try {
                 const data = localStorage.getItem(key);
-                return data ? JSON.parse(data) : { bundles: {}, playlists: {} };
+                const state = data ? JSON.parse(data) : { bundles: {}, playlists: {}, imageBundles: {} };
+                // Ensure imageBundles exists (for backward compatibility)
+                if (!state.imageBundles) state.imageBundles = {};
+                return state;
             } catch (e) {
                 console.error('Failed to load state:', e);
-                return { bundles: {}, playlists: {} };
+                return { bundles: {}, playlists: {}, imageBundles: {} };
             }
         }
 
@@ -2529,6 +2541,18 @@
         function saveBundleState(nodeId, bundleState) {
             const state = loadTerrainState();
             state.bundles[nodeId] = bundleState;
+            saveTerrainState(state);
+        }
+
+        // Image bundle state (separate from audio bundles)
+        function getImageBundleState(nodeId) {
+            const state = loadTerrainState();
+            return state.imageBundles[nodeId] || { playedIndices: [], currentIndex: 0 };
+        }
+
+        function saveImageBundleState(nodeId, bundleState) {
+            const state = loadTerrainState();
+            state.imageBundles[nodeId] = bundleState;
             saveTerrainState(state);
         }
 
@@ -2654,6 +2678,64 @@
             URL.revokeObjectURL(url);
         }
 
+        function importNavigatorIndex() {
+            document.getElementById('importIndexFile').click();
+        }
+
+        function handleIndexFileImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const importedIndex = JSON.parse(e.target.result);
+                    
+                    // Validate structure (should be object with nodeId keys)
+                    if (typeof importedIndex !== 'object' || Array.isArray(importedIndex)) {
+                        throw new Error('Invalid index format');
+                    }
+                    
+                    // Merge imported index with existing (imported data takes precedence)
+                    const mergedCount = Object.keys(importedIndex).length;
+                    let newCount = 0;
+                    
+                    for (const nodeId in importedIndex) {
+                        if (!navigatorState.persistentIndex[nodeId]) {
+                            newCount++;
+                        }
+                        navigatorState.persistentIndex[nodeId] = {
+                            ...navigatorState.persistentIndex[nodeId],
+                            ...importedIndex[nodeId]
+                        };
+                    }
+                    
+                    saveNavigatorState();
+                    renderPersistentIndex();
+                    
+                    // Update count display
+                    document.getElementById('indexCount').textContent = 
+                        `${Object.keys(navigatorState.persistentIndex).length} nodes`;
+                    
+                    console.log(`Imported ${mergedCount} nodes (${newCount} new)`);
+                    alert(`Imported ${mergedCount} nodes (${newCount} new to your index)`);
+                    
+                } catch (err) {
+                    console.error('Failed to import index:', err);
+                    alert('Failed to import index: ' + err.message);
+                }
+            };
+            
+            reader.onerror = () => {
+                alert('Failed to read file');
+            };
+            
+            reader.readAsText(file);
+            
+            // Reset input so the same file can be imported again if needed
+            event.target.value = '';
+        }
+
         // ===========================================
         // BUNDLE LOGIC - File Selection
         // ===========================================
@@ -2700,6 +2782,53 @@
             saveBundleState(nodeId, bundleState);
             
             console.log(`Bundle [${mode}]: Selected ${files[selectedIndex]} (${selectedIndex + 1}/${files.length})`);
+            return files[selectedIndex];
+        }
+
+        // Select image from bundle (same logic as audio, separate state tracking)
+        function selectImageBundleFile(files, mode, nodeId) {
+            if (!files || files.length === 0) return null;
+            if (files.length === 1) return files[0];
+            
+            const bundleState = getImageBundleState(nodeId);
+            let selectedIndex;
+            
+            if (mode === 'sequential') {
+                // Sequential: just increment and loop
+                selectedIndex = bundleState.currentIndex % files.length;
+                bundleState.currentIndex = (bundleState.currentIndex + 1) % files.length;
+                
+            } else if (mode === 'random') {
+                // Pure random
+                selectedIndex = Math.floor(Math.random() * files.length);
+                
+            } else if (mode === 'random_tracked') {
+                // Random but don't repeat until all shown
+                let availableIndices = [];
+                for (let i = 0; i < files.length; i++) {
+                    if (!bundleState.playedIndices.includes(i)) {
+                        availableIndices.push(i);
+                    }
+                }
+                
+                // If all shown, reset
+                if (availableIndices.length === 0) {
+                    bundleState.playedIndices = [];
+                    availableIndices = Array.from({ length: files.length }, (_, i) => i);
+                }
+                
+                // Pick random from available
+                selectedIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+                bundleState.playedIndices.push(selectedIndex);
+                
+            } else {
+                // Default to first file
+                selectedIndex = 0;
+            }
+            
+            saveImageBundleState(nodeId, bundleState);
+            
+            console.log(`Image Bundle [${mode}]: Selected ${files[selectedIndex]} (${selectedIndex + 1}/${files.length})`);
             return files[selectedIndex];
         }
 
@@ -2931,6 +3060,24 @@
             }
         }
 
+        // Helper to revert to primary visual (handles image, image_bundle, or video)
+        function revertToPrimaryVisual(node) {
+            const primary = node?.visuals?.[0];
+            if (!primary) return;
+            
+            if (primary.type === 'image') {
+                crossfadeToImage(primary.src, node.id);
+            } else if (primary.type === 'image_bundle') {
+                // Note: This will select a new image from the bundle
+                // which may or may not be desired behavior on revert
+                const selectedImage = selectImageBundleFile(primary.files, primary.mode || 'random_tracked', node.id);
+                if (selectedImage) {
+                    crossfadeToImage(selectedImage, node.id);
+                }
+            }
+            // For video primary, we don't auto-revert (would need special handling)
+        }
+        
         function scheduleTimedVisuals(node) {
             // Schedule from timestamp 0 (node entry)
             scheduleTimedVisualsFrom(0, node);
@@ -2970,7 +3117,7 @@
                     }
                     
                     const timerId = Timers.setTimeout(() => {
-                        console.log('Timed visual timer fired:', visual.type, visual.src);
+                        console.log('Timed visual timer fired:', visual.type, visual.src || visual.files);
                         if (visual.type === 'image') {
                             // Cleanup timed video if switching to image
                             cleanupTimedVideo();
@@ -2979,10 +3126,22 @@
                             // Schedule revert to primary visual after duration (images only)
                             if (duration > 0) {
                                 const revertTimerId = Timers.setTimeout(() => {
-                                    const primary = targetNode.visuals[0];
-                                    if (primary?.type === 'image') {
-                                        crossfadeToImage(primary.src, targetNode.id);
-                                    }
+                                    revertToPrimaryVisual(targetNode);
+                                }, duration);
+                                timedVideoScheduled.push(revertTimerId);
+                            }
+                        } else if (visual.type === 'image_bundle') {
+                            // Select and display image from bundle
+                            cleanupTimedVideo();
+                            const selectedImage = selectImageBundleFile(visual.files, visual.mode || 'random_tracked', targetNode.id + '_timed_' + index);
+                            if (selectedImage) {
+                                crossfadeToImage(selectedImage, targetNode.id);
+                            }
+                            
+                            // Schedule revert to primary visual after duration
+                            if (duration > 0) {
+                                const revertTimerId = Timers.setTimeout(() => {
+                                    revertToPrimaryVisual(targetNode);
                                 }, duration);
                                 timedVideoScheduled.push(revertTimerId);
                             }
@@ -3001,10 +3160,7 @@
                     if (duration > 0) {
                         const revertDelay = (start + duration) - fromTimestamp;
                         const revertTimerId = Timers.setTimeout(() => {
-                            const primary = targetNode.visuals[0];
-                            if (primary?.type === 'image') {
-                                crossfadeToImage(primary.src, targetNode.id);
-                            }
+                            revertToPrimaryVisual(targetNode);
                         }, revertDelay);
                         timedVideoScheduled.push(revertTimerId);
                     }
@@ -3013,10 +3169,7 @@
                 else if (duration > 0 && fromTimestamp >= start && fromTimestamp < start + duration) {
                     const remainingDuration = (start + duration) - fromTimestamp;
                     const revertTimerId = Timers.setTimeout(() => {
-                        const primary = targetNode.visuals[0];
-                        if (primary?.type === 'image') {
-                            crossfadeToImage(primary.src, targetNode.id);
-                        }
+                        revertToPrimaryVisual(targetNode);
                     }, remainingDuration);
                     timedVideoScheduled.push(revertTimerId);
                 }
@@ -3028,14 +3181,14 @@
             if (!currentNode || !currentNode.visuals) return;
             
             // Find the visual that should be active at this timestamp
-            // For images: consider duration (only active within start to start+duration window)
+            // For images/image_bundles: consider duration (only active within start to start+duration window)
             // For videos: original logic (latest with start <= timestamp)
             const activeVisual = currentNode.visuals
                 .filter(v => {
                     const start = v.start || 0;
                     if (timestamp < start) return false;  // Hasn't started yet
-                    // For images with duration, check if still within window
-                    if (v.type === 'image' && v.duration && v.duration > 0) {
+                    // For images/image_bundles with duration, check if still within window
+                    if ((v.type === 'image' || v.type === 'image_bundle') && v.duration && v.duration > 0) {
                         return timestamp < start + v.duration;
                     }
                     return true;  // Videos and images without duration
@@ -3046,6 +3199,13 @@
                 if (activeVisual.type === 'image') {
                     cleanupTimedVideo();
                     crossfadeToImage(activeVisual.src, currentNode.id);
+                } else if (activeVisual.type === 'image_bundle') {
+                    cleanupTimedVideo();
+                    // Use timestamp in key for consistent selection during scrubbing
+                    const selectedImage = selectImageBundleFile(activeVisual.files, activeVisual.mode || 'random_tracked', currentNode.id + '_seek_' + (activeVisual.start || 0));
+                    if (selectedImage) {
+                        crossfadeToImage(selectedImage, currentNode.id);
+                    }
                 } else if (activeVisual.type === 'video') {
                     // If we already have a timed video, just seek it
                     if (timedVideo && timedVideo.parentNode) {
@@ -3166,6 +3326,8 @@
         let carouselIndex = 0;
         let carouselEnabled = false;
         let carouselNodeId = null;  // Track current node for cache lookups
+        let carouselAutoAdvanceTimer = null;
+        let carouselAutoAdvanceInterval = 0;  // ms between auto-advances (0 = disabled)
 
         function updateCarouselCounter(total, activeIndex) {
             if (!carouselCounter) return;
@@ -3192,11 +3354,37 @@
             return normalized;
         }
 
+        function startCarouselAutoAdvance() {
+            stopCarouselAutoAdvance();
+            if (!carouselAutoAdvanceInterval || carouselAutoAdvanceInterval <= 0) return;
+            if (carouselImages.length < 2) return;
+            
+            carouselAutoAdvanceTimer = setInterval(() => {
+                carouselGo(1);
+            }, carouselAutoAdvanceInterval);
+        }
+
+        function stopCarouselAutoAdvance() {
+            if (carouselAutoAdvanceTimer) {
+                clearInterval(carouselAutoAdvanceTimer);
+                carouselAutoAdvanceTimer = null;
+            }
+        }
+
+        function resetCarouselAutoAdvance() {
+            // Reset timer when user manually navigates (gives full interval before next auto-advance)
+            if (carouselAutoAdvanceInterval > 0) {
+                startCarouselAutoAdvance();
+            }
+        }
+
         function hideCarousel() {
+            stopCarouselAutoAdvance();
             carouselEnabled = false;
             carouselImages = [];
             carouselIndex = 0;
             carouselNodeId = null;
+            carouselAutoAdvanceInterval = 0;
             carouselNavStrip?.classList.remove('active');
             carouselCaption?.classList.remove('active');
             if (carouselCaption) carouselCaption.textContent = '';
@@ -3232,22 +3420,29 @@
             carouselIndex = 0;
             carouselEnabled = true;
             carouselNodeId = node.id;  // Store for cache lookups
+            carouselAutoAdvanceInterval = node.imageAutoAdvance || 0;
             updateCarouselUI();
             // Display first image now (with nodeId for cache)
             crossfadeToImage(carouselImages[0].src, node.id);
+            // Start auto-advance if configured
+            startCarouselAutoAdvance();
             return true;
         }
 
-        function carouselGo(delta) {
+        function carouselGo(delta, isManual = false) {
             if (!carouselEnabled || carouselImages.length < 2) return;
             const total = carouselImages.length;
             carouselIndex = (carouselIndex + delta + total) % total;
             updateCarouselUI();
             crossfadeToImage(carouselImages[carouselIndex].src, carouselNodeId);
+            // Reset auto-advance timer on manual navigation
+            if (isManual) {
+                resetCarouselAutoAdvance();
+            }
         }
 
-        carouselPrevBtn?.addEventListener('click', () => carouselGo(-1));
-        carouselNextBtn?.addEventListener('click', () => carouselGo(1));
+        carouselPrevBtn?.addEventListener('click', () => carouselGo(-1, true));
+        carouselNextBtn?.addEventListener('click', () => carouselGo(1, true));
 
         // Touch/swipe on images DISABLED - users pinch-to-zoom on mobile
         // and swipes cause accidental image changes. Use arrow buttons only.
@@ -3255,8 +3450,8 @@
         // Keyboard arrows (desktop convenience)
         document.addEventListener('keydown', (e) => {
             if (!carouselEnabled || carouselImages.length < 2) return;
-            if (e.key === 'ArrowLeft') carouselGo(-1);
-            if (e.key === 'ArrowRight') carouselGo(1);
+            if (e.key === 'ArrowLeft') carouselGo(-1, true);
+            if (e.key === 'ArrowRight') carouselGo(1, true);
         });
 
         // ===========================================
@@ -3404,6 +3599,13 @@
                 // Switch from timed video to image
                 cleanupTimedVideo();
                 crossfadeToImage(visual.src, currentNode.id);
+            } else if (visual.type === 'image_bundle') {
+                // Select and display image from bundle
+                cleanupTimedVideo();
+                const selectedImage = selectImageBundleFile(visual.files, visual.mode || 'random_tracked', currentNode.id + '_interruptible_' + timestamp);
+                if (selectedImage) {
+                    crossfadeToImage(selectedImage, currentNode.id);
+                }
             } else if (visual.type === 'video') {
                 // Switch to new timed video
                 cleanupTimedVideo();
@@ -3706,6 +3908,16 @@
                     const visual = node.visuals[0];
                     if (visual.type === 'image') {
                         crossfadeToImage(visual.src, node.id);
+                    } else if (visual.type === 'image_bundle') {
+                        // Select image from bundle based on mode
+                        const selectedImage = selectImageBundleFile(
+                            visual.files, 
+                            visual.mode || 'random_tracked', 
+                            node.id
+                        );
+                        if (selectedImage) {
+                            crossfadeToImage(selectedImage, node.id);
+                        }
                     } else if (visual.type === 'video') {
                         // Use timed video system (synced to primary audio)
                         setupTimedVideo(visual.src, visual.start || 0, visual.duration || 0, visual.poster);
