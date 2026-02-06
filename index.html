@@ -4265,6 +4265,7 @@
 
             // Stop all content audio first
             stopAllContentAudio();
+            stopCarouselAutoAdvance(); // Freeze image carousel during transition
             
             // Allow passing a custom transition object
             let transition;
