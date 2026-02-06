@@ -1,0 +1,49 @@
+{
+  "title": "Terrain - Multipath Publishing",
+  "themeColor": "#242424",
+  "pwaTitle": "Terrain",
+
+  "css": {
+    "--bg-main": "#242424",
+    "--bg-viewport": "#242424",
+    "--bg-button": "#3d5a6c",
+    "--bg-button-hover": "#4a6d82",
+    "--bg-button-active": "#2d4a5c",
+    "--bg-button-transport": "#4a9f6e",
+    "--bg-button-transport-hover": "#5ab87e",
+    "--border-button": "#5a7a8c",
+    "--text-primary": "#e0e0e0",
+    "--text-dim": "#888888",
+    "--accent-green": "#4a9f6e",
+    "--accent-green-glow": "rgba(74, 159, 110, 0.5)",
+    "--accent-blue": "#5a7a8c",
+    "--accent-red": "#8c5a5a",
+    "--input-bg": "#2a2a2a",
+    "--input-border": "#444444",
+    "--input-active-border": "#4a9f6e",
+    "--bg-panel": "#2a2a2a",
+    "--bg-input": "#2a2a2a",
+    "--border": "#444444",
+    "--font-size-base": "28px",
+    "--font-weight-base": "300",
+    "--terrain-icon-size": "28px",
+    "--terrain-transport-icon-size": "30px",
+    "--terrain-key-size": "48px",
+    "--terrain-key-font": "26px",
+    "--terrain-key-gap": "10px",
+    "--terrain-keypad-gutter": "14px"
+  },
+
+  "cssMedia": {
+    "(min-width: 769px)": {
+      "--terrain-key-size": "46px",
+      "--terrain-key-font": "26px"
+    },
+    "(max-width: 768px)": {
+      "--terrain-key-size": "44px",
+      "--terrain-key-font": "26px",
+      "--terrain-key-gap": "12px",
+      "--terrain-keypad-gutter": "14px"
+    }
+  }
+}

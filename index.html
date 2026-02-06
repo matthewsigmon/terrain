@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Terrain</title>
+    <title>Sigmon - A Set of Something</title>
     
     <!-- PWA Support -->
     <link rel="manifest" href="site.webmanifest">
@@ -23,10 +23,10 @@
            COLOR PALETTE - Easy to customize
            =========================================== */
         :root {
-            --bg-main: #242424;
-            --bg-viewport: #242424;
-            --bg-button: #3d5a6c;
-            --bg-button-hover: #4a6d82;
+            --bg-main: #191919;
+            --bg-viewport: #191919;
+            --bg-button: #5e5e5e;
+            --bg-button-hover: #414141;
             --bg-button-active: #2d4a5c;
             --bg-button-transport: #4a9f6e;
             --bg-button-transport-hover: #5ab87e;
@@ -3786,6 +3786,66 @@
         }
 
         // ===========================================
+        // SITE CONFIG - Per-site overrides (site-config.json)
+        // ===========================================
+        // Loads site-config.json to override CSS variables, page title,
+        // and PWA metadata. This file is per-site and should NOT be
+        // overwritten when updating index.html.
+        async function loadSiteConfig() {
+            try {
+                const response = await fetch('site-config.json');
+                if (!response.ok) {
+                    console.log('No site-config.json found, using defaults');
+                    return;
+                }
+                const cfg = await response.json();
+
+                // Page title
+                if (cfg.title) document.title = cfg.title;
+
+                // Meta tags
+                if (cfg.themeColor) {
+                    const meta = document.querySelector('meta[name="theme-color"]');
+                    if (meta) meta.setAttribute('content', cfg.themeColor);
+                }
+                if (cfg.pwaTitle) {
+                    const meta = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+                    if (meta) meta.setAttribute('content', cfg.pwaTitle);
+                }
+
+                // CSS custom property overrides (base/default values)
+                if (cfg.css) {
+                    const root = document.documentElement;
+                    for (const [prop, value] of Object.entries(cfg.css)) {
+                        root.style.setProperty(prop, value);
+                    }
+                }
+
+                // CSS custom property overrides per media query
+                // These are injected as a <style> block so media queries work correctly
+                if (cfg.cssMedia) {
+                    let mediaCSS = '';
+                    for (const [query, vars] of Object.entries(cfg.cssMedia)) {
+                        let declarations = '';
+                        for (const [prop, value] of Object.entries(vars)) {
+                            declarations += `  ${prop}: ${value} !important;\n`;
+                        }
+                        mediaCSS += `@media ${query} {\n  :root {\n${declarations}  }\n}\n`;
+                    }
+                    if (mediaCSS) {
+                        const style = document.createElement('style');
+                        style.textContent = mediaCSS;
+                        document.head.appendChild(style);
+                    }
+                }
+
+                console.log('Site config loaded:', cfg.title || '(no title override)');
+            } catch (e) {
+                console.log('Site config not available, using defaults:', e.message);
+            }
+        }
+
+        // ===========================================
         // LOAD MANIFEST
         // ===========================================
         async function loadManifest() {
@@ -5484,7 +5544,7 @@ src: ${pa.src ? pa.src.split('/').slice(-2).join('/') : '(empty)'}`;
         console.log('  PerfMonitor.enabled = false  - Disable monitoring');
         
         startDebugHudLoop();
-        loadManifest();
+        loadSiteConfig().then(() => loadManifest());
         updateInputDisplay();
         updateRtnDelButton();
         updateAddressModeOverlay();
