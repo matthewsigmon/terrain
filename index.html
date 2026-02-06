@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Terrain</title>
+    <title>Sigmon - A Set of Something</title>
     
     <!-- PWA Support -->
     <link rel="manifest" href="site.webmanifest">
@@ -23,10 +23,10 @@
            COLOR PALETTE - Easy to customize
            =========================================== */
         :root {
-            --bg-main: #242424;
-            --bg-viewport: #242424;
-            --bg-button: #3d5a6c;
-            --bg-button-hover: #4a6d82;
+            --bg-main: #191919;
+            --bg-viewport: #191919;
+            --bg-button: #5e5e5e;
+            --bg-button-hover: #414141;
             --bg-button-active: #2d4a5c;
             --bg-button-transport: #4a9f6e;
             --bg-button-transport-hover: #5ab87e;
@@ -2438,6 +2438,7 @@
                 
                 const playlistState = getPlaylistState(nodeId);
                 const trackIndex = playlistState.currentTrack || 0;
+                const savedTime = playlistState.currentTime || 0;
                 
                 currentPlaylist = {
                     nodeId: nodeId,
@@ -2445,12 +2446,22 @@
                     currentTrack: trackIndex
                 };
                 
-                // Load and play first track
+                // Load and play saved track (resuming position if available)
                 const trackFile = files[trackIndex];
-                console.log(`Playlist: Playing track ${trackIndex + 1}/${files.length}: ${trackFile}`);
+                console.log(`Playlist: Playing track ${trackIndex + 1}/${files.length}: ${trackFile}` +
+                    (savedTime > 0 ? ` (resuming at ${Math.floor(savedTime)}s)` : ''));
                 
                 primaryAudio.src = resolveMediaUrl(trackFile);
                 primaryAudio.loop = false;
+                
+                // Restore saved position within the track
+                if (savedTime > 0) {
+                    primaryAudio.addEventListener('loadedmetadata', () => {
+                        if (savedTime < primaryAudio.duration) {
+                            primaryAudio.currentTime = savedTime;
+                        }
+                    }, { once: true });
+                }
                 
                 // Set up auto-advance to next track
                 safeSetOnEnded(primaryAudio, () => {
@@ -2492,10 +2503,12 @@
             console.log(`Playlist: Playing track ${nextTrack + 1}/${currentPlaylist.files.length}: ${trackFile}`);
             
             primaryAudio.src = resolveMediaUrl(trackFile);
+            // Re-attach auto-advance handler for the new track
+            safeSetOnEnded(primaryAudio, () => { advancePlaylist(); }, navVersion);
             primaryAudio.play().catch(e => console.log('Playlist track failed:', e));
             
             // Save progress
-            savePlaylistState(currentPlaylist.nodeId, { currentTrack: nextTrack });
+            savePlaylistState(currentPlaylist.nodeId, { currentTrack: nextTrack, currentTime: 0 });
         }
 
         // ===========================================
@@ -3511,6 +3524,18 @@
                 }
                 
                 progressText.textContent = displayText;
+                
+                // Periodically save playlist position for resume (every ~10 seconds)
+                if (currentPlaylist && current > 0) {
+                    const now = Date.now();
+                    if (!currentPlaylist._lastPositionSave || now - currentPlaylist._lastPositionSave > 10000) {
+                        currentPlaylist._lastPositionSave = now;
+                        savePlaylistState(currentPlaylist.nodeId, {
+                            currentTrack: currentPlaylist.currentTrack,
+                            currentTime: current
+                        });
+                    }
+                }
             }
             
             // Check for interruptible choices (audio-driven, including timed video nodes)
@@ -4668,8 +4693,28 @@
                     updateAddressModeOverlay();
                 }
             } else if (key === 'prev') {
-                // Restart from beginning
-                if (isVideoActive()) {
+                if (currentPlaylist) {
+                    // Playlist mode: if >3s in, restart current track; otherwise go to previous track
+                    if (primaryAudio.currentTime > 3) {
+                        // More than 3s into track: restart current track
+                        primaryAudio.currentTime = 0;
+                        primaryAudio.play().catch(e => console.log('Playlist track restart failed:', e));
+                    } else if (currentPlaylist.currentTrack > 0) {
+                        // Near start: go to previous track
+                        const prevTrack = currentPlaylist.currentTrack - 1;
+                        currentPlaylist.currentTrack = prevTrack;
+                        const trackFile = currentPlaylist.files[prevTrack];
+                        console.log(`Playlist: Playing track ${prevTrack + 1}/${currentPlaylist.files.length}: ${trackFile}`);
+                        primaryAudio.src = resolveMediaUrl(trackFile);
+                        safeSetOnEnded(primaryAudio, () => { advancePlaylist(); }, navVersion);
+                        primaryAudio.play().catch(e => console.log('Playlist prev track failed:', e));
+                        savePlaylistState(currentPlaylist.nodeId, { currentTrack: prevTrack, currentTime: 0 });
+                    } else {
+                        // Already at first track, just restart it
+                        primaryAudio.currentTime = 0;
+                        primaryAudio.play().catch(e => console.log('Playlist track restart failed:', e));
+                    }
+                } else if (isVideoActive()) {
                     // Restart standalone video node
                     restartVideo();
                 } else {
@@ -4760,19 +4805,24 @@
                 }
                 updatePauseIcon();
             } else if (key === 'next') {
-                // Fast forward - skip ahead 10 seconds
-                const media = getActiveMediaElement();
-                if (media.src) {
-                    const newTime = Math.min(media.duration, media.currentTime + 10);
-                    media.currentTime = newTime;
-                    // Sync timed video if present
-                    if (timedVideo && timedVideo.parentNode) {
-                        timedVideo.currentTime = newTime;
-                    } else if (!videoState && currentNode?.visuals?.length > 1) {
-                        // No timed video - check if we need to update timed images
-                        showTimedVisualAtTime(newTime * 1000);
+                if (currentPlaylist) {
+                    // Playlist mode: advance to next track
+                    advancePlaylist();
+                } else {
+                    // Single file: skip ahead 10 seconds
+                    const media = getActiveMediaElement();
+                    if (media.src) {
+                        const newTime = Math.min(media.duration, media.currentTime + 10);
+                        media.currentTime = newTime;
+                        // Sync timed video if present
+                        if (timedVideo && timedVideo.parentNode) {
+                            timedVideo.currentTime = newTime;
+                        } else if (!videoState && currentNode?.visuals?.length > 1) {
+                            // No timed video - check if we need to update timed images
+                            showTimedVisualAtTime(newTime * 1000);
+                        }
+                        updateProgressBar();
                     }
-                    updateProgressBar();
                 }
             } else if (key === '#') {
                 // # is the GO button
@@ -4868,15 +4918,24 @@
             
             if (isAddressMode) {
                 // Navigate to address
-                const address = normalizeAddress(inputValue);
-                console.log('Navigating to address:', address);
+                // First try raw input (without @ prefix), then fall back to normalized format
+                const rawAddress = inputValue.startsWith('@') ? inputValue.slice(1) : inputValue;
+                const normalizedAddress = normalizeAddress(inputValue);
                 
-                // Check if node exists and is addressable
-                const targetNode = manifest.nodes.find(n => n.id === address);
+                // Try raw first (supports IDs like "411"), then normalized (supports "0411.0" format)
+                let targetNode = manifest.nodes.find(n => n.id === rawAddress);
+                let address = rawAddress;
+                
+                if (!targetNode && rawAddress !== normalizedAddress) {
+                    targetNode = manifest.nodes.find(n => n.id === normalizedAddress);
+                    address = normalizedAddress;
+                }
+                
+                console.log('Navigating to address:', address, targetNode ? '(found)' : '(not found)');
                 
                 if (!targetNode) {
                     // Node doesn't exist
-                    console.log('Address not found:', address);
+                    console.log('Address not found:', rawAddress, 'or', normalizedAddress);
                     inputValue = 'NOT FOUND';
                     updateInputDisplay();
                     Timers.setTimeout(withNavGuard(() => {
