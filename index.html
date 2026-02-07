@@ -1027,6 +1027,22 @@
             color: var(--accent-green);
         }
 
+        .share-link {
+            color: var(--text-dim);
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.2s ease;
+            user-select: none;
+        }
+
+        .share-link:hover {
+            color: var(--accent-green);
+        }
+
+        .share-link.copied {
+            color: var(--accent-green);
+        }
+
         .support-link {
             margin-top: auto;
             padding-top: 8px;
@@ -1830,6 +1846,40 @@
 
         let audioBookmark = null; // Stores { nodeId, timestamp } for return navigation
         let activeInterruptibles = []; // Currently available interruptible choices
+
+        // ===========================================
+        // DEEP LINK - Read #node= from URL hash
+        // ===========================================
+        function getDeepLinkNodeId() {
+            const hash = window.location.hash; // e.g. "#node=1.10"
+            if (!hash) return null;
+            const match = hash.match(/^#node=(.+)$/);
+            if (!match) return null;
+            const nodeId = decodeURIComponent(match[1]);
+            // Validate: node must exist, be addressable, and be shareable
+            const node = manifest?.nodes?.find(n => n.id === nodeId);
+            if (!node) {
+                console.log('Deep link: node not found:', nodeId);
+                return null;
+            }
+            if (node.addressable === false) {
+                console.log('Deep link: node not addressable:', nodeId);
+                return null;
+            }
+            if (node.shareable === false) {
+                console.log('Deep link: node not shareable:', nodeId);
+                return null;
+            }
+            console.log('Deep link: navigating to', nodeId);
+            return nodeId;
+        }
+
+        function clearDeepLinkHash() {
+            // Clean up the URL hash after using it, without triggering a page reload
+            if (window.location.hash) {
+                history.replaceState(null, '', window.location.pathname + window.location.search);
+            }
+        }
 
         // ===========================================
         // MEDIA URL RESOLUTION
@@ -4377,8 +4427,48 @@
                 linksArea.appendChild(a);
             });
             
+            // Add share link if node is shareable (default: true unless explicitly false)
+            if (currentNode && currentNode.shareable !== false && 
+                currentNode.addressable !== false) {
+                const shareEl = document.createElement('span');
+                shareEl.className = 'share-link';
+                shareEl.textContent = 'Share this node';
+                shareEl.addEventListener('click', () => {
+                    const shareUrl = `${window.location.origin}${window.location.pathname}#node=${encodeURIComponent(currentNode.id)}`;
+                    
+                    // Try native share API first (mobile), fall back to clipboard
+                    if (navigator.share) {
+                        navigator.share({
+                            title: currentNode.title || 'Terrain',
+                            url: shareUrl
+                        }).catch(() => {
+                            // User cancelled or share failed - fall back to clipboard
+                            copyShareLink(shareEl, shareUrl);
+                        });
+                    } else {
+                        copyShareLink(shareEl, shareUrl);
+                    }
+                });
+                linksArea.appendChild(shareEl);
+            }
+            
             // Re-add support link
             linksArea.appendChild(supportLink);
+        }
+
+        function copyShareLink(el, url) {
+            navigator.clipboard.writeText(url).then(() => {
+                const originalText = el.textContent;
+                el.textContent = 'Link copied';
+                el.classList.add('copied');
+                setTimeout(() => {
+                    el.textContent = originalText;
+                    el.classList.remove('copied');
+                }, 2000);
+            }).catch(() => {
+                // Clipboard API failed - show URL as fallback
+                prompt('Copy this link:', url);
+            });
         }
 
         function crossfadeToImage(newSrc, nodeId = null) {
@@ -5093,7 +5183,10 @@
                         if (imageB && imageB.src.includes('start.jpg')) imageB.src = '';
                         
                         // Load the node first (sets up image behind loading screen)
-                        loadNode(manifest.terrain.startNode);
+                        // Check for deep link (#node=X.X) - navigate there instead of start
+                        const deepLinkNode = getDeepLinkNodeId();
+                        loadNode(deepLinkNode || manifest.terrain.startNode);
+                        clearDeepLinkHash();
                         
                         // Fade out loading screen over the node image
                         loadingScreen.style.transition = 'opacity 0.5s ease-out';
