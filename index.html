@@ -663,6 +663,7 @@
             opacity: 0.85;
             letter-spacing: 0.05em;
             font-variant-numeric: tabular-nums;
+            font-weight: var(--carousel-nav-weight, 300);
         }
 
         .carousel-caption {
@@ -764,8 +765,8 @@
         /* When NOT typing, make the time readout feel designed */
         .input-field:not(.active) {
             font-family: inherit;     /* Montserrat */
-            letter-spacing: 0.10em;
-            font-weight: 500;
+            letter-spacing: -0.02em;
+            font-weight: var(--font-weight-base);
         }
 
         /* When typing, preserve the existing “address entry” feel */
@@ -1024,6 +1025,7 @@
             color: #ffffff;
             text-decoration: none;
             transition: color 0.2s ease;
+            font-weight: var(--font-weight-base);
         }
 
         .external-link:hover {
