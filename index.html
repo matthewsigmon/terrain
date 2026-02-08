@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Terrain - Multipath Publishing</title>
+    <title>Sigmon - A Set of Something</title>
     
     <!-- PWA Support -->
     <link rel="manifest" href="site.webmanifest">
@@ -17,7 +17,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         /* ===========================================
            COLOR PALETTE - Easy to customize
@@ -31,8 +31,8 @@
             --bg-button-transport: #4a9f6e;
             --bg-button-transport-hover: #5ab87e;
             --border-button: #5a7a8c;
-            --text-primary: #e0e0e0;
-            --text-dim: #888888;
+            --text-primary: #ffffff;
+            --text-dim: #b3b3b3;
             --accent-green: #4a9f6e;
             --accent-green-glow: rgba(74, 159, 110, 0.5);
             --accent-blue: #5a7a8c;
@@ -45,7 +45,7 @@
             --border: #444444;
             /* BASE FONT CONTROLS - Adjust these to scale all UI text */
             --font-size-base: 28px;
-            --font-weight-base: 300;
+            --font-weight-base: 800;
         }
 
         /* ===========================================
@@ -67,8 +67,9 @@
         body {
             background-color: var(--bg-main);
             color: var(--text-primary);
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             font-weight: var(--font-weight-base);
+            letter-spacing: -0.02em;
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -213,7 +214,7 @@
 
         .navigator-title {
             font-size: 1.09rem;
-            font-weight: var(--font-weight-base);
+            font-weight: 800;
             color: var(--text-primary);
         }
 
@@ -261,7 +262,7 @@
 
         .section-title {
             font-size: 0.82rem;
-            font-weight: var(--font-weight-base);
+            font-weight: 800;
             color: var(--text-primary);
         }
 
@@ -396,6 +397,7 @@
 
         .index-item-title {
             font-size: 0.68rem;
+            font-weight: 800;
             color: var(--text-primary);
             margin-bottom: 5px;
         }
@@ -486,6 +488,7 @@
             padding: 40px;
             color: var(--text-dim);
             font-size: 0.64rem;
+            letter-spacing: 0;
         }
 
         /* ===========================================
@@ -640,7 +643,7 @@
             border: none;
             padding: 8px;
             color: var(--text-dim);
-            opacity: 0.7;
+            opacity: 0.8;
             transition: opacity 0.15s ease;
             cursor: pointer;
         }
@@ -657,7 +660,7 @@
         .carousel-counter {
             font-size: 0.75rem;
             color: var(--text-dim);
-            opacity: 0.7;
+            opacity: 0.85;
             letter-spacing: 0.05em;
             font-variant-numeric: tabular-nums;
         }
@@ -760,7 +763,7 @@
 
         /* When NOT typing, make the time readout feel designed */
         .input-field:not(.active) {
-            font-family: inherit;     /* Inter */
+            font-family: inherit;     /* Montserrat */
             letter-spacing: 0.10em;
             font-weight: 500;
         }
@@ -1033,6 +1036,7 @@
             cursor: pointer;
             transition: color 0.2s ease;
             user-select: none;
+            font-weight: var(--font-weight-base);
         }
 
         .share-link:hover {
@@ -1051,6 +1055,7 @@
             font-size: 0.55rem;
             text-decoration: none;
             opacity: 1;
+            font-weight: var(--font-weight-base);
         }
 
         .support-link:hover {
@@ -1226,7 +1231,7 @@
         button,
         input,
         textarea {
-          font-family: "Inter", -apple-system, BlinkMacSystemFont,
+          font-family: "Montserrat", -apple-system, BlinkMacSystemFont,
                        "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
@@ -1236,6 +1241,7 @@
         .keypad button,
         .keypad .key,
         .keypad-key {
+          font-family: 'Inter', sans-serif;  /* Keypad stays on Inter */
           font-size: 1.35rem;          /* larger than typical UI */
           font-weight: 600;            /* SemiBold: confident, not heavy */
           line-height: 1;
@@ -1264,7 +1270,7 @@
           font-weight: 400;
           letter-spacing: 0.04em;
           text-transform: none;        /* avoid UI shouting */
-          opacity: 0.7;
+          opacity: 0.9;
         }
 
         /* -----------------------------------------------------
@@ -1323,7 +1329,7 @@
         button,
         input,
         textarea {
-          font-family: "Inter", -apple-system, BlinkMacSystemFont,
+          font-family: "Montserrat", -apple-system, BlinkMacSystemFont,
                        "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
@@ -1345,6 +1351,7 @@
           align-items: center;
           justify-content: center;
 
+          font-family: 'Inter', sans-serif;  /* Keypad stays on Inter */
           font-size: var(--terrain-key-font);
           font-weight: 600;                  /* sculptural confidence */
           line-height: 1;
@@ -1375,7 +1382,7 @@
           font-weight: 400;
           letter-spacing: 0.04em;
           text-transform: none;
-          opacity: 0.7;
+          opacity: 0.9;
         }
 
         /* -----------------------------------------------------
