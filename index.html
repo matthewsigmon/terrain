@@ -1,23 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
+<!-- saved from url=(0031)https://repo.matthewsigmon.com/ -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Sigmon - A Set of Something</title>
     
     <!-- PWA Support -->
-    <link rel="manifest" href="site.webmanifest">
+    <link rel="manifest" href="https://repo.matthewsigmon.com/site.webmanifest">
     <meta name="theme-color" content="#242424">
     
     <!-- iOS PWA Support -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Terrain">
-    <link rel="apple-touch-icon" href="assets/images/icons/icon-180.png">
+    <link rel="apple-touch-icon" href="https://repo.matthewsigmon.com/assets/images/icons/icon-180.png">
     
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com/">
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         /* ===========================================
            COLOR PALETTE - Easy to customize
@@ -1544,9 +1544,23 @@
         <div class="sidebar">
             <div class="logo">FURTHER<br>ELEMENT</div>
                 <button class="start-home-btn highlighted awaiting-start" id="startHomeBtn" aria-label="Start">
-                    <span class="sr-only">Start</span>
-                </button>
-                <button class="index-btn" id="indexBtn" aria-label="Index"></button>
+                
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M12 2v8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
+                    <path d="M6.2 5.2a8 8 0 1 0 11.6 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
+                </svg>
+            
+                <span class="sr-only">Start</span>
+            </button>
+                <button class="index-btn" id="indexBtn" aria-label="Index">
+                <svg viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+                    <g fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round">
+                        <path d="M14 16H34"></path>
+                        <path d="M14 24H34"></path>
+                        <path d="M14 32H34"></path>
+                    </g>
+                </svg>
+            </button>
         </div>
 
         <!-- Viewport -->
@@ -1554,16 +1568,16 @@
             <div class="viewport" id="viewport">
                 <!-- Loading screen -->
                 <div id="loadingScreen" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 1000;">
-                    <video id="loadingVideo" style="width: 100%; height: 100%; object-fit: cover;" autoplay playsinline>
+                    <video id="loadingVideo" style="width: 100%; height: 100%; object-fit: cover;" autoplay="" playsinline="">
                         <source src="assets/loading.mp4" type="video/mp4">
                     </video>
                 </div>
                 <!-- Two image layers for crossfading -->
-                <img id="viewportImageA" class="viewport-image active" src="start.jpg" alt="" style="opacity: 1;">
-                <img id="viewportImageB" class="viewport-image" alt="" style="opacity: 0;">
+                <img id="viewportImageA" class="viewport-image active" src="start.jpg" alt="" style="opacity: 1; display: block;">
+                <img id="viewportImageB" class="viewport-image" alt="" style="opacity: 0; display: block;">
                 
                 <!-- Video layer (above images, below overlays) -->
-                <video id="viewportVideo" class="viewport-video" playsinline style="display: none;"></video>
+                <video id="viewportVideo" class="viewport-video" playsinline="" style="display: none;"></video>
                 
                 <!-- YouTube embed container -->
                 <div id="youtubeContainer" class="youtube-container"></div>
@@ -1581,7 +1595,7 @@
             <div id="carouselNavStrip" class="carousel-nav-strip" aria-hidden="true">
                 <button class="carousel-nav-btn" id="carouselPrev" type="button" aria-label="Previous image">
                     <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                        <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path>
                     </svg>
                 </button>
                 
@@ -1589,7 +1603,7 @@
                 
                 <button class="carousel-nav-btn" id="carouselNext" type="button" aria-label="Next image">
                     <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                        <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path>
                     </svg>
                 </button>
             </div>
@@ -1602,14 +1616,14 @@
                     <div class="navigator-title">Navigator Index</div>
                     <button class="close-btn" onclick="closeNavigator()" aria-label="Close">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
-                            <path d="M18 6L6 18M6 6l12 12"/>
+                            <path d="M18 6L6 18M6 6l12 12"></path>
                         </svg>
                     </button>
                 </div>
 
                 <!-- SESSION JOURNEY -->
                 <div class="navigator-section">
-                    <div class="section-header" onclick="toggleSection('sessionJourney')">
+                    <div class="section-header" onclick="toggleSection(&#39;sessionJourney&#39;)">
                         <div class="section-title">Session History</div>
                         <div class="section-count" id="sessionCount">0 nodes</div>
                     </div>
@@ -1620,7 +1634,7 @@
 
                 <!-- PERSISTENT INDEX -->
                 <div class="navigator-section">
-                    <div class="section-header" onclick="toggleSection('persistentIndex')">
+                    <div class="section-header" onclick="toggleSection(&#39;persistentIndex&#39;)">
                         <div class="section-title">Index</div>
                         <div class="section-count" id="indexCount">0 nodes</div>
                     </div>
@@ -1645,9 +1659,7 @@
                             </div>
                             <div class="control-group">
                                 <label class="control-label">Search</label>
-                                <input type="text" class="control-input" id="searchInput" 
-                                       placeholder="Search titles..." 
-                                       oninput="renderPersistentIndex()">
+                                <input type="text" class="control-input" id="searchInput" placeholder="Search titles..." oninput="renderPersistentIndex()">
                             </div>
                             <button class="export-btn" onclick="exportNavigatorIndex()">Export</button>
                             <button class="export-btn" onclick="importNavigatorIndex()">Import</button>
@@ -1661,12 +1673,10 @@
             </div>
         </div>
 
-        <div id="resumeOverlay"
-             style="display:none; position:fixed; inset:0; z-index:3000;
+        <div id="resumeOverlay" style="display:none; position:fixed; inset:0; z-index:3000;
                     background:rgba(0,0,0,0.88);
                     align-items:center; justify-content:center;">
-            <button id="resumeBtn"
-                    style="font:18px/1.2 sans-serif;
+            <button id="resumeBtn" style="font:18px/1.2 sans-serif;
                            padding:16px 22px;
                            border-radius:10px;
                            border:0;
@@ -1681,7 +1691,7 @@
             <div class="input-row">
                 <div class="input-field" id="inputField">
                     <div class="progress-bar" id="progressBar"></div>
-                    <span class="progress-text" id="progressText"></span>
+                    <span class="progress-text" id="progressText">To view a shared link, press the power button</span>
                 </div>
             </div>
 
@@ -1707,48 +1717,43 @@
                         <button class="key" data-key="@">@</button>
                         <button class="key" data-key=".">•</button>
                         <button class="key transport-key rtn-key icon-only" data-key="DEL" id="rtnDelBtn" aria-label="Return">
-                            <span id="rtnDelLabel" class="sr-only">RTN</span>
-                        </button>
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 0 1 0 12h-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                </svg>
+            <span class="sr-only">Return</span></button>
                         <button class="key key-go icon-only" data-key="#" id="goBtn" aria-label="Go">
-                            <span class="sr-only">GO</span>
-                            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                                <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/>
-                                <path d="M8.5 12.2l2.4 2.4 4.8-5.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </button>
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M4.5 12.75l6 6 9-13.5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                </svg>
+            <span class="sr-only">Go</span></button>
                     </div>
 
                     <!-- Transport -->
                     <div class="transport">
                         <button class="key transport icon-only" data-key="prev" id="transportPrevBtn" aria-label="Restart">
-                            <span class="sr-only">Restart</span>
-                            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                                <path d="M6 12H18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                <path d="M10 8l-4 4 4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </button>
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M11 18V6L2 12l9 6Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path>
+                    <path d="M22 18V6l-9 6 9 6Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path>
+                </svg>
+            <span class="sr-only">Restart</span></button>
                         <button class="key transport icon-only" data-key="pause" id="transportPauseBtn" aria-label="Pause">
-                            <span class="sr-only">Pause</span>
-                            <!-- Default icon = PAUSE; JS will swap to PLAY when paused -->
-                            <svg data-icon="pause" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                                <path d="M9 7v10" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
-                                <path d="M15 7v10" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
-                            </svg>
-                        </button>
-                        <button class="key transport icon-only" data-key="next" id="transportNextBtn" aria-label="Forward 10 seconds">
-                            <span class="sr-only">Forward 10 seconds</span>
-                            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                                <path d="M6 12H18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                <path d="M14 8l4 4-4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </button>
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M7 5v14M17 5v14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"></path>
+                </svg>
+            <span class="sr-only">Pause</span></button>
+                        <button class="key transport icon-only" data-key="next" id="transportNextBtn" aria-label="Skip forward">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M13 6v12l9-6-9-6Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path>
+                    <path d="M2 6v12l9-6-9-6Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path>
+                </svg>
+            <span class="sr-only">Skip forward</span></button>
                     </div>
                 </div>
 
                 <!-- Links Area -->
                 <div class="links-area" id="linksArea">
-                    <a href="#" class="external-link" style="display:none;"></a>
-                    <a href="#" class="support-link">Support this project</a>
+                    <a href="https://repo.matthewsigmon.com/#" class="external-link" style="display:none;"></a>
+                    <a href="https://repo.matthewsigmon.com/#" class="support-link">Support this project</a>
                 </div>
             </div>
         </div>
@@ -3032,6 +3037,9 @@
         // ===========================================
         // States: null (no video), 'ready', 'playing', 'paused', 'ended'
         let videoState = null;
+        
+        // Audio manual start state: null (normal autoplay), 'ready' (awaiting GO)
+        let audioManualState = null;
 
         // ===========================================
         // YOUTUBE NODE STATE
@@ -3639,6 +3647,17 @@
                 return;
             }
             
+            // Handle audio manual start ready state (show duration at 0:00)
+            if (audioManualState === 'ready') {
+                // Don't overwrite user input or address mode display
+                if (isAddressMode || inputValue.length > 0) return;
+                if (primaryAudio.duration > 0) {
+                    progressBar.style.width = '0%';
+                    progressText.textContent = `Press ✓ to play audio · ${formatTime(primaryAudio.duration)}`;
+                }
+                return;
+            }
+            
             // Get active media element (video or audio)
             const media = getActiveMediaElement();
             const hasPrimary = !!(media && media.src && media.src !== '');
@@ -4087,6 +4106,7 @@
 
             stopAllContentAudio();
             currentPlaylist = null;
+            audioManualState = null;
 
             // Teardown video if active
             teardownVideo();
@@ -4231,18 +4251,26 @@
 
                     const timingDelay = node.audio.primaryTiming || 0;
 
-                    const startPrimary = withNavGuard(() => {
-                        primaryAudio.play().catch(e => console.log('Audio autoplay prevented:', e));
+                    // Manual start: load audio but wait for GO button
+                    if (node.audio.manualStart) {
+                        audioManualState = 'ready';
+                        progressBar.style.width = '0%';
+                        progressText.textContent = 'Press ✓ to play audio';
                         startProgressUpdates();
-                        // Also start timed video if present - ensure it's synced to audio start
-                        if (timedVideo && timedVideo.parentNode) {
-                            timedVideo.currentTime = 0;
-                            timedVideo.play().catch(e => console.log('Timed video play failed:', e));
-                        }
-                    }, versionAtEnter);
+                    } else {
+                        const startPrimary = withNavGuard(() => {
+                            primaryAudio.play().catch(e => console.log('Audio autoplay prevented:', e));
+                            startProgressUpdates();
+                            // Also start timed video if present - ensure it's synced to audio start
+                            if (timedVideo && timedVideo.parentNode) {
+                                timedVideo.currentTime = 0;
+                                timedVideo.play().catch(e => console.log('Timed video play failed:', e));
+                            }
+                        }, versionAtEnter);
 
-                    if (timingDelay > 0) Timers.setTimeout(startPrimary, timingDelay);
-                    else startPrimary();
+                        if (timingDelay > 0) Timers.setTimeout(startPrimary, timingDelay);
+                        else startPrimary();
+                    }
                 }
             }
 
@@ -5018,6 +5046,8 @@
                 }
             } else if (key === 'pause') {
                 // Toggle pause/play
+                // Don't toggle if audio is in manual-start ready state
+                if (audioManualState === 'ready') return;
                 if (isVideoActive()) {
                     // Toggle standalone video node pause
                     if (viewportVideo.paused) {
@@ -5191,6 +5221,19 @@
             // Video: GO starts video when in ready state
             if (videoState === 'ready') {
                 startVideo();
+                return;
+            }
+            
+            // Audio manual start: GO starts audio when awaiting trigger
+            if (audioManualState === 'ready') {
+                audioManualState = null;
+                primaryAudio.play().catch(e => console.log('Manual audio play prevented:', e));
+                startProgressUpdates();
+                // Also start timed video if present
+                if (timedVideo && timedVideo.parentNode) {
+                    timedVideo.currentTime = 0;
+                    timedVideo.play().catch(e => console.log('Timed video play failed:', e));
+                }
                 return;
             }
             
@@ -5767,11 +5810,14 @@ src: ${pa.src ? pa.src.split('/').slice(-2).join('/') : '(empty)'}`;
         console.log('  PerfMonitor.enabled = false  - Disable monitoring');
         
         startDebugHudLoop();
-        loadSiteConfig().then(() => loadManifest());
+        loadSiteConfig().then(() => {
+            loadManifest();
+            // Show shared link hint on start page
+            progressText.textContent = 'Have a shared link? Press power';
+        });
         updateInputDisplay();
         updateRtnDelButton();
         updateAddressModeOverlay();
         updatePauseIcon();
     </script>
-</body>
-</html>
+</body></html>
