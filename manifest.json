@@ -282,14 +282,7 @@
         "audio": "assets/audio/transitions/transition-002.mp3",
         "volume": -5
       },
-      "visuals": [
-        {
-          "type": "image",
-          "src": "assets/images/nodes/0001.2.jpg",
-          "start": 0,
-          "duration": 0
-        }
-      ],
+      "visuals": [],
       "choices": [
         {
           "key": "1",
