@@ -625,6 +625,23 @@
             object-fit: contain;
         }
 
+        /* YouTube iframe container */
+        .youtube-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 5;
+            display: none;
+        }
+
+        .youtube-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
         /* ===========================================
            IMAGE CAROUSEL NAV STRIP (below viewport)
            =========================================== */
@@ -1547,6 +1564,9 @@
                 
                 <!-- Video layer (above images, below overlays) -->
                 <video id="viewportVideo" class="viewport-video" playsinline style="display: none;"></video>
+                
+                <!-- YouTube embed container -->
+                <div id="youtubeContainer" class="youtube-container"></div>
                 
                 <!-- Address mode overlay indicator -->
                 <div id="addressModeOverlay" class="address-mode-overlay">
@@ -2977,11 +2997,12 @@
         const carouselCounter = document.getElementById('carouselCounter');
         const carouselCaption = document.getElementById('carouselCaption');
         const viewportVideo = document.getElementById('viewportVideo');
+        const youtubeContainer = document.getElementById('youtubeContainer');
 
         // ===========================================
         // VIDEO SYSTEMS OVERVIEW
         // ===========================================
-        // Terrain supports TWO independent video playback systems:
+        // Terrain supports THREE video playback systems:
         //
         // 1. VIDEO NODES (node.video.src) - "Baked-in audio"
         //    - Use when: Video has its own audio track, user controls playback
@@ -2997,6 +3018,13 @@
         //    - Features: auto-sync to audio, scheduled visual switches
         //    - Cleanup: cleanupTimedVideo()
         //
+        // 3. YOUTUBE NODES (node.video.youtubeId) - "External embed"
+        //    - Use when: Video hosted on YouTube, saves storage/bandwidth
+        //    - Element: youtubeContainer with iframe
+        //    - State: youtubeState tracks ready/playing
+        //    - Features: poster image, GO key reveals YouTube player
+        //    - Cleanup: teardownYouTube()
+        //
         // These systems are mutually exclusive per node but coexist in the codebase.
 
         // ===========================================
@@ -3006,12 +3034,19 @@
         let videoState = null;
 
         // ===========================================
+        // YOUTUBE NODE STATE
+        // ===========================================
+        // States: null (no youtube), 'ready', 'playing'
+        let youtubeState = null;
+
+        // ===========================================
         // TIMED VIDEO STATE (synced to primary audio)
         // ===========================================
         let timedVideo = null;  // Reference to active timed video element
         let timedVideoScheduled = [];  // Scheduled timed video switches
+        let timedVideoPersist = false;  // If true, video continues after audio ends
 
-        function setupTimedVideo(videoSrc, startTime, duration, posterSrc) {
+        function setupTimedVideo(videoSrc, startTime, duration, posterSrc, loop = false, persist = false) {
             // Create video element in viewport
             const video = document.createElement('video');
             video.src = resolveMediaUrl(videoSrc);
@@ -3019,7 +3054,7 @@
             video.controls = false;
             video.playsInline = true;
             video.muted = true;  // Muted because audio comes from primaryAudio
-            video.loop = false;
+            video.loop = loop;  // Enable looping if specified
             video.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 3;';
             
             // Set poster if provided (posters are images, served from Pages)
@@ -3068,6 +3103,7 @@
             const viewport = document.getElementById('viewport');
             viewport.appendChild(video);
             timedVideo = video;
+            timedVideoPersist = persist;  // Track if this video should persist after audio ends
 
             // Preload the video
             video.load();
@@ -3075,41 +3111,37 @@
             return video;
         }
 
-        function cleanupTimedVideo() {
+        function cleanupTimedVideo(force = false) {
             // Only clean up the video element - don't clear scheduled timers here
             // Timers are cleared by clearTimedVisualSchedule() when leaving a node
+            
+            // If persist is true and not forcing cleanup, keep the video playing
+            if (timedVideoPersist && !force && timedVideo && !timedVideo.paused) {
+                console.log('Timed video persisting after audio end');
+                return;
+            }
+            
             if (timedVideo) {
                 timedVideo.pause();
                 
                 // Mark as cleaned up to prevent error handler from acting on stale video
                 timedVideo._cleaned = true;
                 
-                // Hide image layers before removing video to prevent flash of old content
-                const imageA = document.getElementById('viewportImageA');
-                const imageB = document.getElementById('viewportImageB');
+                // Store reference for delayed removal
+                const videoToRemove = timedVideo;
                 
-                // Disable transitions and hide both layers
-                imageA.style.transition = 'none';
-                imageB.style.transition = 'none';
-                imageA.style.opacity = '0';
-                imageB.style.opacity = '0';
-                
-                // Force reflow on BOTH to ensure opacity is applied
-                void imageA.offsetWidth;
-                void imageB.offsetWidth;
-                
-                // Now remove video - image layers are hidden, showing #242424 background
-                if (timedVideo.parentNode) {
-                    timedVideo.parentNode.removeChild(timedVideo);
-                }
-                
-                // Re-enable transitions for the upcoming crossfade
-                imageA.style.transition = '';
-                imageB.style.transition = '';
-                
-                // Clear src
-                timedVideo.src = '';
+                // Clear state immediately so new visuals can be set up
                 timedVideo = null;
+                timedVideoPersist = false;
+                
+                // Delay actual removal to allow crossfade to happen over the video
+                // The next node's image will fade in on top, then we remove
+                setTimeout(() => {
+                    if (videoToRemove.parentNode) {
+                        videoToRemove.parentNode.removeChild(videoToRemove);
+                    }
+                    videoToRemove.src = '';
+                }, 500);  // Match crossfade duration + buffer
             }
         }
         
@@ -3222,7 +3254,7 @@
                         } else if (visual.type === 'video') {
                             // Switch to new timed video
                             cleanupTimedVideo();
-                            const video = setupTimedVideo(visual.src, 0, duration, visual.poster);
+                            const video = setupTimedVideo(visual.src, 0, duration, visual.poster, visual.loop, visual.persist);
                             // Start immediately since we're at the scheduled time
                             video.play().catch(e => console.log('Scheduled timed video play failed:', e));
                         }
@@ -3291,7 +3323,7 @@
                         }
                     } else {
                         // No timed video yet, create one
-                        const video = setupTimedVideo(activeVisual.src, 0, activeVisual.duration || 0, activeVisual.poster);
+                        const video = setupTimedVideo(activeVisual.src, 0, activeVisual.duration || 0, activeVisual.poster, activeVisual.loop, activeVisual.persist);
                         const videoStartTime = activeVisual.start || 0;
                         const videoOffset = (timestamp - videoStartTime) / 1000;
                         video.currentTime = Math.max(0, videoOffset);
@@ -3391,6 +3423,65 @@
                 viewportVideo.src = '';
             }
             videoState = null;
+        }
+
+        // ===========================================
+        // YOUTUBE NODE FUNCTIONS
+        // ===========================================
+        function prepareYouTube(node) {
+            console.log('Preparing YouTube node:', node.id, 'youtubeId:', node.video.youtubeId);
+            
+            // Show poster image
+            if (node.video.poster) {
+                crossfadeToImage(resolveMediaUrl(node.video.poster), node.id);
+            }
+            
+            // Set state to ready (waiting for GO key)
+            youtubeState = 'ready';
+            
+            // Update progress bar to show YouTube mode
+            progressText.textContent = 'Press ✓ to play YouTube video';
+            progressBar.style.width = '0%';
+            
+            // Links still work on YouTube nodes
+            updateLinks(node.links || []);
+        }
+        
+        function startYouTube() {
+            if (!currentNode?.video?.youtubeId || youtubeState !== 'ready') return;
+            
+            const youtubeId = currentNode.video.youtubeId;
+            console.log('Starting YouTube video:', youtubeId);
+            
+            // Build YouTube embed URL with parameters
+            // autoplay=1, rel=0 (no related videos), modestbranding=1
+            const embedUrl = `https://www.youtube.com/embed/${youtubeId}?autoplay=1&rel=0&modestbranding=1`;
+            
+            // Create iframe
+            const iframe = document.createElement('iframe');
+            iframe.src = embedUrl;
+            iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+            iframe.allowFullscreen = true;
+            
+            // Clear container and add iframe
+            youtubeContainer.innerHTML = '';
+            youtubeContainer.appendChild(iframe);
+            youtubeContainer.style.display = 'block';
+            
+            youtubeState = 'playing';
+            progressText.textContent = 'Playing YouTube video';
+            
+            // Hide Terrain transport controls during YouTube playback
+            // (YouTube has its own controls)
+            updatePauseIcon();
+        }
+        
+        function teardownYouTube() {
+            if (youtubeContainer) {
+                youtubeContainer.innerHTML = '';
+                youtubeContainer.style.display = 'none';
+            }
+            youtubeState = null;
         }
 
         // ===========================================
@@ -3695,7 +3786,7 @@
             } else if (visual.type === 'video') {
                 // Switch to new timed video
                 cleanupTimedVideo();
-                const video = setupTimedVideo(visual.src, 0, visual.duration || 0, visual.poster);
+                const video = setupTimedVideo(visual.src, 0, visual.duration || 0, visual.poster, visual.loop, visual.persist);
                 video.play().catch(e => console.log('Interruptible timed video play failed:', e));
             }
         }
@@ -4000,8 +4091,11 @@
             // Teardown video if active
             teardownVideo();
 
-            // Cleanup timed video and scheduled visual timers
-            cleanupTimedVideo();
+            // Teardown YouTube if active
+            teardownYouTube();
+
+            // Cleanup timed video and scheduled visual timers (force=true to override persist)
+            cleanupTimedVideo(true);
             clearTimedVisualSchedule();
 
             // Reset carousel state for next node
@@ -4011,6 +4105,12 @@
         function prepareNode(node) {
             // Add to navigator tracking
             addToNavigator(node);
+
+            // YOUTUBE NODE: Show poster and wait for GO key
+            if (node.video && node.video.youtubeId) {
+                prepareYouTube(node);
+                return;
+            }
 
             // VIDEO NODE: Load video and show poster
             if (node.video && node.video.src) {
@@ -4066,7 +4166,7 @@
                         }
                     } else if (visual.type === 'video') {
                         // Use timed video system (synced to primary audio)
-                        setupTimedVideo(visual.src, visual.start || 0, visual.duration || 0, visual.poster);
+                        setupTimedVideo(visual.src, visual.start || 0, visual.duration || 0, visual.poster, visual.loop, visual.persist);
                     }
                     
                     // Schedule any additional timed visuals (start > 0)
@@ -4079,6 +4179,12 @@
         }
 
         function enterNode(node, versionAtEnter) {
+            // YOUTUBE NODE: Skip audio setup, YouTube waits for GO key
+            if (node.video && node.video.youtubeId) {
+                console.log('YouTube node ready, press GO to start');
+                return;
+            }
+
             // VIDEO NODE: Skip audio setup, video waits for GO key
             if (node.video && node.video.src) {
                 console.log('Video node ready, press GO to start');
@@ -4178,6 +4284,12 @@
             if (!node.audio?.primary && (node.audio?.aux1 || (node.choices && node.choices.length > 0))) {
                 progressBar.style.width = '0%';
                 progressText.textContent = 'Make a choice when ready';
+                
+                // Start timed video if present (no primary audio to trigger it)
+                if (timedVideo && timedVideo.parentNode) {
+                    timedVideo.currentTime = 0;
+                    timedVideo.play().catch(e => console.log('Timed video play failed (aux1-only):', e));
+                }
             }
 
             // DESTINATION autoNext behavior (transition semantics)
@@ -5069,6 +5181,12 @@
 
         function handleEnter() {
             // Sound is played on mousedown/keydown, not here
+            
+            // YouTube: GO starts YouTube when in ready state
+            if (youtubeState === 'ready') {
+                startYouTube();
+                return;
+            }
             
             // Video: GO starts video when in ready state
             if (videoState === 'ready') {

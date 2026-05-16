@@ -319,7 +319,8 @@
           "src": "assets/images/nodes/0001.2-detail-2.jpg",
           "caption": ""
         }
-      ]
+      ],
+      "imageAutoAdvance": 5000
     },
     {
       "id": "1000.1",
